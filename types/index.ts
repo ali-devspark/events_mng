@@ -1,4 +1,4 @@
-// TypeScript types for Nazemly Event Management System
+// TypeScript types for Nazemny Event Management System
 
 export interface Event {
     id: string

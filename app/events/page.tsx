@@ -7,12 +7,14 @@ import { getEvents } from '@/lib/api/events'
 import { Event } from '@/types'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function EventsPage() {
     const [events, setEvents] = useState<Event[]>([])
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'finished'>('all')
     const [loading, setLoading] = useState(true)
+    const { t, isRTL } = useLanguage()
 
     useEffect(() => {
         async function loadEvents() {
@@ -51,15 +53,16 @@ export default function EventsPage() {
                     <div className="px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-white mb-2">Events</h1>
-                                <p className="text-gray-400">Manage your events and tickets</p>
+                                <h1 className="text-3xl font-bold text-white mb-2">{t.events.title}</h1>
+                                <p className="text-gray-400">{t.events.description}</p>
                             </div>
                             <Link href="/events/create">
                                 <Button variant="primary">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Create Event
+                                    {/* Create Event */}
+                                    {t.events.create}
                                 </Button>
                             </Link>
                         </div>
@@ -76,7 +79,7 @@ export default function EventsPage() {
                                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                 }`}
                         >
-                            All Events
+                            {t.events.totalEvents}
                         </button>
                         <button
                             onClick={() => setFilter('upcoming')}
@@ -85,7 +88,7 @@ export default function EventsPage() {
                                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                 }`}
                         >
-                            Upcoming
+                            {t.events.upcomingEvents}
                         </button>
                         <button
                             onClick={() => setFilter('finished')}
@@ -94,7 +97,7 @@ export default function EventsPage() {
                                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                 }`}
                         >
-                            Finished
+                            {t.events.finishedEvents}
                         </button>
                     </div>
 
@@ -103,7 +106,7 @@ export default function EventsPage() {
                         <div className="flex items-center justify-center py-20">
                             <div className="text-center">
                                 <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                                <p className="text-gray-400">Loading events...</p>
+                                <p className="text-gray-400">{t.loading.eventModule}</p>
                             </div>
                         </div>
                     ) : filteredEvents.length > 0 ? (

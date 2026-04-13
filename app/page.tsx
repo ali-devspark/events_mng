@@ -1,113 +1,304 @@
+'use client'
+
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import LanguageToggle from '@/components/ui/LanguageToggle'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function HomePage() {
+    const { t, isRTL } = useLanguage()
+
+    const features = [
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            ),
+            title: t.landing.feature1Title,
+            desc: t.landing.feature1Desc,
+            gradient: 'from-primary-500 to-blue-500',
+            bg: 'bg-primary-500/10',
+            border: 'border-primary-500/20',
+            textColor: 'text-primary-400',
+        },
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            ),
+            title: t.landing.feature2Title,
+            desc: t.landing.feature2Desc,
+            gradient: 'from-accent-500 to-purple-500',
+            bg: 'bg-accent-500/10',
+            border: 'border-accent-500/20',
+            textColor: 'text-accent-400',
+        },
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            ),
+            title: t.landing.feature3Title,
+            desc: t.landing.feature3Desc,
+            gradient: 'from-green-500 to-emerald-500',
+            bg: 'bg-green-500/10',
+            border: 'border-green-500/20',
+            textColor: 'text-green-400',
+        },
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            ),
+            title: t.landing.feature4Title,
+            desc: t.landing.feature4Desc,
+            gradient: 'from-orange-500 to-red-500',
+            bg: 'bg-orange-500/10',
+            border: 'border-orange-500/20',
+            textColor: 'text-orange-400',
+        },
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            ),
+            title: t.landing.feature5Title,
+            desc: t.landing.feature5Desc,
+            gradient: 'from-pink-500 to-rose-500',
+            bg: 'bg-pink-500/10',
+            border: 'border-pink-500/20',
+            textColor: 'text-pink-400',
+        },
+        {
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+            ),
+            title: t.landing.feature6Title,
+            desc: t.landing.feature6Desc,
+            gradient: 'from-cyan-500 to-teal-500',
+            bg: 'bg-cyan-500/10',
+            border: 'border-cyan-500/20',
+            textColor: 'text-cyan-400',
+        },
+    ]
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-            {/* Animated background */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        <div className={`min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 ${isRTL ? 'font-cairo' : 'font-inter'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+
+            {/* Ambient background glows */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary-500/8 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-accent-500/8 rounded-full blur-[120px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px]" />
             </div>
 
-            <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
-                {/* Logo */}
-                <div className="w-20 h-20 mx-auto mb-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-primary-500/30">
-                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
+            {/* Navigation Bar */}
+            <header className="relative z-50 border-b border-white/5 bg-gray-950/50 backdrop-blur-xl sticky top-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        {/* Logo */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <span className="text-white font-bold text-lg">
+                                {isRTL ? 'نظمني ' : 'Nazemny'}
+                            </span>
+                        </div>
 
-                {/* Hero Text */}
-                <div className="space-y-4">
-                    <h1 className="text-5xl md:text-6xl font-bold text-white">
-                        Authentication System
+                        {/* Actions */}
+                        <div className="flex items-center gap-3">
+                            <LanguageToggle />
+                            <Link href="/login">
+                                <Button variant="outline" size="sm">{t.landing.signIn}</Button>
+                            </Link>
+                            <Link href="/register" className="hidden sm:block">
+                                <Button variant="primary" size="sm">{t.landing.getStarted}</Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {/* Hero Section */}
+            <section className="relative z-10 pt-14 pb-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-5xl mx-auto text-center">
+
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-sm font-medium mb-8 animate-fade-in">
+                        <div className="w-2 h-2 rounded-full bg-primary-400 animate-pulse" />
+                        {t.landing.badge}
+                    </div>
+
+                    {/* Hero Title */}
+                    <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold text-white leading-none tracking-tight mb-8 animate-fade-in">
+                        <span className="bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_3s_linear_infinite]">
+                            {t.landing.heroTitle}
+                        </span>
                     </h1>
-                    <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                        Complete authentication solution with Next.js 14 and Supabase
+
+                    {/* Hero Subtitle */}
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-gray-200 my-6 animate-fade-in">
+                        {t.landing.heroSubtitle}
+                    </h2>
+
+                    {/* Hero Description */}
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in">
+                        {t.landing.heroDescription}
                     </p>
+
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">
+                        <Link href="/register">
+                            <Button variant="primary" size="lg" className="shadow-xl shadow-primary-500/20 hover:shadow-primary-500/30 transition-all">
+                                <svg className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                {t.landing.getStarted}
+                            </Button>
+                        </Link>
+                        <Link href="/login">
+                            <Button variant="outline" size="lg">
+                                {t.landing.signIn}
+                            </Button>
+                        </Link>
+                    </div>
+
+                    {/* Stats Bar */}
+                    <div className="mt-16 grid grid-cols-3 gap-4 max-w-xl mx-auto">
+                        {[
+                            { value: t.landing.stat1Value, label: t.landing.stat1Label },
+                            { value: t.landing.stat2Value, label: t.landing.stat2Label },
+                            { value: t.landing.stat3Value, label: t.landing.stat3Label },
+                        ].map((stat, i) => (
+                            <div key={i} className="text-center">
+                                <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
+                                <div className="text-xs sm:text-sm text-gray-500 mt-1">{stat.label}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Features */}
-                <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto mt-12">
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                        <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                {/* Hero visual: floating dashboard preview */}
+                <div className="relative max-w-4xl mx-auto mt-16">
+                    <div className="relative bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/40">
+                        {/* Fake topbar */}
+                        <div className="flex items-center gap-2 mb-5">
+                            <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                            <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                            <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                            <div className="flex-1 mx-4 h-6 bg-white/5 rounded-md" />
+                        </div>
+                        {/* Fake dashboard content */}
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                            {['from-primary-500/30 to-primary-600/10', 'from-accent-500/30 to-accent-600/10', 'from-green-500/30 to-green-600/10'].map((grad, i) => (
+                                <div key={i} className={`bg-gradient-to-br ${grad} border border-white/5 rounded-xl p-4`}>
+                                    <div className="w-8 h-8 rounded-lg bg-white/10 mb-3" />
+                                    <div className="h-3 bg-white/20 rounded w-1/2 mb-2" />
+                                    <div className="h-6 bg-white/10 rounded w-3/4" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="h-16 bg-white/5 rounded-lg border border-white/5" />
+                            ))}
+                        </div>
+                        {/* Glow overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent rounded-2xl pointer-events-none" />
+                    </div>
+                    {/* Bottom glow */}
+                    <div className="absolute -bottom-10 left-1/4 right-1/4 h-20 bg-primary-500/20 blur-3xl rounded-full" />
+                </div>
+            </section>
+
+            {/* Features Section */}
+            <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-14">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                            {t.landing.featuresTitle}
+                        </h2>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                            {t.landing.featuresSubtitle}
+                        </p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {features.map((feature, index) => (
+                            <div
+                                key={index}
+                                className={`group relative bg-gray-900/50 backdrop-blur-sm border ${feature.border} rounded-2xl p-6 hover:bg-gray-900/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+                            >
+                                {/* Icon */}
+                                <div className={`w-12 h-12 ${feature.bg} rounded-xl flex items-center justify-center mb-4 ${feature.textColor} group-hover:scale-110 transition-transform duration-300`}>
+                                    {feature.icon}
+                                </div>
+                                {/* Gradient top line */}
+                                <div className={`absolute top-0 ${isRTL ? 'right-6' : 'left-6'} w-12 h-0.5 bg-gradient-to-r ${feature.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                                <h3 className="text-white font-semibold text-lg mb-2">{feature.title}</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto">
+                    <div className="relative bg-gradient-to-br from-primary-500/10 via-accent-500/10 to-primary-500/10 border border-white/10 rounded-3xl p-10 text-center overflow-hidden">
+                        {/* Background glow */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 rounded-3xl" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full" />
+
+                        <div className="relative">
+                            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20">
+                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">{t.landing.ctaTitle}</h2>
+                            <p className="text-gray-400 mb-8 text-lg">{t.landing.ctaDesc}</p>
+                            <Link href="/register">
+                                <Button variant="primary" size="lg" className="shadow-xl shadow-primary-500/25">
+                                    {t.landing.getStarted}
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="relative z-10 border-t border-white/5 py-8 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h3 className="text-white font-semibold mb-2">Email Auth</h3>
-                        <p className="text-gray-400 text-sm">Email/password with verification</p>
+                        <span className="text-gray-400 text-sm">
+                            {isRTL ? '© 2026 نظمني. جميع الحقوق محفوظة.' : '© 2026 Nazemny. All rights reserved.'}
+                        </span>
                     </div>
-
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                        <div className="w-12 h-12 bg-accent-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-6 h-6 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-white font-semibold mb-2">Phone Auth</h3>
-                        <p className="text-gray-400 text-sm">SMS OTP verification</p>
-                    </div>
-
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                        <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-white font-semibold mb-2">Password Reset</h3>
-                        <p className="text-gray-400 text-sm">Secure password recovery</p>
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                        <span>{t.landing.builtWith}</span>
+                        <span className="text-gray-400 font-medium">Next.js · Supabase · Tailwind</span>
                     </div>
                 </div>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-                    <Link href="/register">
-                        <Button variant="primary" size="lg">
-                            Get Started
-                        </Button>
-                    </Link>
-                    <Link href="/login">
-                        <Button variant="outline" size="lg">
-                            Sign In
-                        </Button>
-                    </Link>
-                </div>
-
-                {/* Tech Stack */}
-                <div className="pt-12">
-                    <p className="text-gray-500 text-sm mb-4">Built with</p>
-                    <div className="flex flex-wrap justify-center gap-6 text-gray-400">
-                        <span className="flex items-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.572 0c-.176 0-.31.001-.358.007a19.76 19.76 0 0 1-.364.033C7.443.346 4.25 2.185 2.228 5.012a11.875 11.875 0 0 0-2.119 5.243c-.096.659-.108.854-.108 1.747s.012 1.089.108 1.748c.652 4.506 3.86 8.292 8.209 9.695.779.25 1.6.422 2.534.525.363.04 1.935.04 2.299 0 1.611-.178 2.977-.577 4.323-1.264.207-.106.247-.134.219-.158-.02-.013-.9-1.193-1.955-2.62l-1.919-2.592-2.404-3.558a338.739 338.739 0 0 0-2.422-3.556c-.009-.002-.018 1.579-.023 3.51-.007 3.38-.01 3.515-.052 3.595a.426.426 0 0 1-.206.214c-.075.037-.14.044-.495.044H7.81l-.108-.068a.438.438 0 0 1-.157-.171l-.05-.106.006-4.703.007-4.705.072-.092a.645.645 0 0 1 .174-.143c.096-.047.134-.051.54-.051.478 0 .558.018.682.154.035.038 1.337 1.999 2.895 4.361a10760.433 10760.433 0 0 0 4.735 7.17l1.9 2.879.096-.063a12.317 12.317 0 0 0 2.466-2.163 11.944 11.944 0 0 0 2.824-6.134c.096-.66.108-.854.108-1.748 0-.893-.012-1.088-.108-1.747-.652-4.506-3.859-8.292-8.208-9.695a12.597 12.597 0 0 0-2.499-.523A33.119 33.119 0 0 0 11.573 0zm4.069 7.217c.347 0 .408.005.486.047a.473.473 0 0 1 .237.277c.018.06.023 1.365.018 4.304l-.006 4.218-.744-1.14-.746-1.14v-3.066c0-1.982.01-3.097.023-3.15a.478.478 0 0 1 .233-.296c.096-.05.13-.054.5-.054z" />
-                            </svg>
-                            Next.js 14
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z" />
-                            </svg>
-                            React 18
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z" />
-                            </svg>
-                            Tailwind CSS
-                        </span>
-                        <span className="flex items-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 109 113" fill="currentColor">
-                                <path d="M63.7076 110.284C60.8481 113.885 55.0502 111.912 54.9813 107.314L53.9738 40.0627L99.1935 40.0627C107.384 40.0627 111.952 49.5228 106.859 55.9374L63.7076 110.284Z" />
-                                <path d="M63.7076 110.284C60.8481 113.885 55.0502 111.912 54.9813 107.314L53.9738 40.0627L99.1935 40.0627C107.384 40.0627 111.952 49.5228 106.859 55.9374L63.7076 110.284Z" />
-                                <path d="M45.317 2.07103C48.1765 -1.53037 53.9745 0.442937 54.0434 5.041L54.4849 72.2922H9.83113C1.64038 72.2922 -2.92775 62.8321 2.1655 56.4175L45.317 2.07103Z" />
-                            </svg>
-                            Supabase
-                        </span>
-                    </div>
-                </div>
-            </div>
+            </footer>
         </div>
     )
 }

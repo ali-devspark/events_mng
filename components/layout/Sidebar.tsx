@@ -2,22 +2,44 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
+import LanguageToggle from '@/components/ui/LanguageToggle'
 
 const Sidebar: React.FC = () => {
     const pathname = usePathname()
     const router = useRouter()
-    const { signOut } = useAuth()
+    const { signOut, user } = useAuth()
+    const { t, isRTL } = useLanguage()
 
     const handleSignOut = async () => {
         await signOut()
         router.push('/login')
     }
 
+    // Extract display name and avatar from user metadata
+    const displayName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.email?.split('@')[0] ||
+        (isRTL ? 'المستخدم' : 'User')
+
+    const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
+    const email = user?.email || ''
+
+    // Get initials for avatar fallback
+    const initials = displayName
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+
     const navigation = [
         {
-            name: 'Dashboard',
+            name: t.nav.dashboard,
             href: '/dashboard',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,7 +48,7 @@ const Sidebar: React.FC = () => {
             ),
         },
         {
-            name: 'Events',
+            name: t.nav.events,
             href: '/events',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,7 +57,7 @@ const Sidebar: React.FC = () => {
             ),
         },
         {
-            name: 'Calendar',
+            name: t.nav.calendar,
             href: '/calendar',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +66,7 @@ const Sidebar: React.FC = () => {
             ),
         },
         {
-            name: 'Settings',
+            name: t.nav.settings,
             href: '/settings/profile',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,55 +78,119 @@ const Sidebar: React.FC = () => {
     ]
 
     return (
-        <div className="w-64 bg-gray-900 border-r border-white/10 flex flex-col h-screen sticky top-0">
+        <div
+            className="w-64 bg-gray-900 border-white/10 flex flex-col h-screen sticky top-0"
+            style={{ borderInlineEndWidth: '1px', borderInlineEndColor: 'rgba(255,255,255,0.1)' }}
+            dir={isRTL ? 'rtl' : 'ltr'}
+        >
             {/* Logo */}
-            <div className="p-6 border-b border-white/10">
+            <div className="p-5 border-b border-white/10">
                 <Link href="/dashboard" className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary-500/20">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Nazemly</h1>
-                        <p className="text-xs text-gray-400">نظملي</p>
+                        <h1 className="text-lg font-bold text-white leading-none">
+                            {/* {isRTL ? 'نظمني' : 'Nazemny'} */}
+                            {t.nav.systemTitle}
+                        </h1>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                            {/* {isRTL ? 'Event Management' : 'إدارة الفعاليات'} */}
+                            {t.nav.systemDesc}
+                        </p>
                     </div>
                 </Link>
             </div>
 
+            {/* User Profile Card */}
+            <div className="p-4 border-b border-white/10">
+                <Link
+                    href="/settings/profile"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all duration-200 group"
+                >
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0">
+                        {avatarUrl ? (
+                            <Image
+                                src={avatarUrl}
+                                alt={displayName}
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-xl object-cover"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-semibold text-sm">
+                                {initials}
+                            </div>
+                        )}
+                        {/* Online indicator */}
+                        <div className="absolute -bottom-0.5 -end-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900" />
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">
+                            {displayName}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{email}</p>
+                    </div>
+
+                    {/* Arrow icon */}
+                    <svg
+                        className={`w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors flex-shrink-0 ${isRTL ? 'rotate-180' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </Link>
+            </div>
+
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1">
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                 {navigation.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                     return (
                         <Link
-                            key={item.name}
+                            key={item.href}
                             href={item.href}
                             className={`
-                flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                ${isActive
-                                    ? 'bg-primary-500/20 text-primary-400 font-medium'
-                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                                ${isActive
+                                    ? 'bg-primary-500/15 text-primary-400 font-medium border border-primary-500/20 shadow-sm shadow-primary-500/10'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'
                                 }
-              `}
+                            `}
                         >
-                            {item.icon}
-                            {item.name}
+                            <span className={`flex-shrink-0 ${isActive ? 'text-primary-400' : ''}`}>
+                                {item.icon}
+                            </span>
+                            <span>{item.name}</span>
+                            {isActive && (
+                                <span className={`${isRTL ? 'me-auto' : 'ms-auto'} w-1.5 h-1.5 rounded-full bg-primary-400`} />
+                            )}
                         </Link>
                     )
                 })}
             </nav>
 
-            {/* Logout */}
-            <div className="p-4 border-t border-white/10">
+            {/* Bottom Section: Language + Logout */}
+            <div className="p-4 border-t border-white/10 space-y-2">
+                {/* Language Toggle */}
+                <div className="flex justify-center">
+                    <LanguageToggle />
+                </div>
+
+                {/* Logout */}
                 <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 w-full"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all duration-200 w-full"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Logout
+                    {t.nav.logout}
                 </button>
             </div>
         </div>

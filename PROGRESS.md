@@ -1,8 +1,8 @@
-# Nazemly (نظملي) - Event Management Platform
+# Nazemny (نظمني) - Event Management Platform
 
 ## 🎉 Project Status
 
-I've successfully transformed the authentication system into **Nazemly** - a comprehensive event management platform!
+I've successfully transformed the authentication system into **Nazemny** - a comprehensive event management platform!
 
 ## ✅ Completed Features
 
@@ -29,7 +29,7 @@ I've successfully transformed the authentication system into **Nazemly** - a com
 - ✅ **Create Event** - Form to create new events
 
 ### Branding
-- ✅ Updated to Nazemly (نظملي)
+- ✅ Updated to Nazemny (نظمني)
 - ✅ New color scheme with success colors
 - ✅ Added dependencies (qrcode, date-fns, recharts)
 

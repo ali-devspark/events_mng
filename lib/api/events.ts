@@ -84,7 +84,9 @@ export async function getEventsByDate(date: string) {
 
 export async function getEventsByMonth(year: number, month: number) {
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-    const endDate = `${year}-${String(month).padStart(2, '0')}-31`
+    // Calculate the actual last day of the month (handles 28/29/30/31 correctly)
+    const lastDay = new Date(year, month, 0).getDate()
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
     const { data, error } = await supabase
         .from('events')

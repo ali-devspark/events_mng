@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const cairo = Cairo({ subsets: ["arabic"], variable: "--font-cairo" });
 
 export const metadata: Metadata = {
-    title: "Nazemly - نظملي | Event Management Platform",
-    description: "Comprehensive event management system with tickets, attendees, and analytics",
+    title: "Nazemny - نظمني | منصة إدارة الفعاليات",
+    description: "منصة متكاملة لإدارة الفعاليات | Comprehensive event management platform",
 };
 
 export default function RootLayout({
@@ -16,10 +18,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={inter.className}>
+        <html lang="ar" dir="rtl">
+            <body className={`${inter.variable} ${cairo.variable} font-sans`}>
                 <AuthProvider>
-                    {children}
+                    <LanguageProvider>
+                        {children}
+                    </LanguageProvider>
                 </AuthProvider>
             </body>
         </html>

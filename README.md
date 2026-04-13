@@ -1,6 +1,6 @@
-# Nazemly - Event Management System
+# Nazemny - Event Management System
 
-A comprehensive, production-ready event management system built with Next.js 14, React 18, TypeScript, Tailwind CSS, and Supabase. Nazemly empowers you to create, manage, and track events with ease.
+A comprehensive, production-ready event management system built with Next.js 14, React 18, TypeScript, Tailwind CSS, and Supabase. Nazemny empowers you to create, manage, and track events with ease.
 
 ## Features
 
@@ -94,7 +94,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ```
-nazemly/
+Nazemny/
 ├── app/                      # Next.js 14 App Router
 │   ├── calendar/            # Calendar view
 │   ├── dashboard/           # Analytics dashboard

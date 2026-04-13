@@ -1,5 +1,5 @@
 {
-  "name": "nazemly",
+  "name": "Nazemny",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "date-fns": "^3.0.6",
-    "next": "latest",
+    "next": "^16.2.3",
     "qrcode": "^1.5.3",
     "react": "latest",
     "react-dom": "latest",

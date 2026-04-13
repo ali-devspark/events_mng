@@ -8,11 +8,13 @@ import { getUserEventStats, getEvents } from '@/lib/api/events'
 import { Event, EventStats } from '@/types'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<EventStats | null>(null)
     const [recentEvents, setRecentEvents] = useState<Event[]>([])
     const [loading, setLoading] = useState(true)
+    const { t, isRTL } = useLanguage()
 
     useEffect(() => {
         async function loadData() {
@@ -60,8 +62,8 @@ export default function DashboardPage() {
                 {/* Header */}
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
                     <div className="px-8 py-6">
-                        <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-                        <p className="text-gray-400">Welcome to your event management dashboard</p>
+                        <h1 className="text-3xl font-bold text-white mb-2">{t.dashboard.title}</h1>
+                        <p className="text-gray-400">{t.dashboard.welcome}</p>
                     </div>
                 </header>
 
