@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AuthLayout from '@/components/auth/AuthLayout'
 import Input from '@/components/ui/Input'
@@ -10,7 +9,6 @@ import Alert from '@/components/ui/Alert'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterPage() {
-    const router = useRouter()
     const { signUp } = useAuth()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')

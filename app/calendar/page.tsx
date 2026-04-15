@@ -8,10 +8,8 @@ import { getEventsByMonth } from '@/lib/api/events'
 import { getMonthDays, getMonthName, isSameDay, formatDateForInput } from '@/lib/date-utils'
 import { CalendarEvent } from '@/types'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 export default function CalendarPage() {
-    const router = useRouter()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -23,17 +21,16 @@ export default function CalendarPage() {
     const days = getMonthDays(year, month)
 
     useEffect(() => {
-        loadEvents()
-    }, [year, month])
-
-    async function loadEvents() {
-        try {
-            const data = await getEventsByMonth(year, month)
-            setEvents(data as CalendarEvent[])
-        } catch (error) {
-            console.error('Error loading events:', error)
+        const loadEvents = async () => {
+            try {
+                const data = await getEventsByMonth(year, month)
+                setEvents(data as CalendarEvent[])
+            } catch (error) {
+                console.error('Error loading events:', error)
+            }
         }
-    }
+        void loadEvents()
+    }, [year, month])
 
     function handleDayClick(date: Date) {
         const eventsForDay = events.filter(e => {

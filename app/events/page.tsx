@@ -14,7 +14,7 @@ export default function EventsPage() {
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'finished'>('all')
     const [loading, setLoading] = useState(true)
-    const { t, isRTL } = useLanguage()
+    const { t } = useLanguage()
 
     useEffect(() => {
         async function loadEvents() {

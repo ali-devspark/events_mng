@@ -498,7 +498,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const saved = localStorage.getItem('Nazemny-language') as Language | null
         if (saved && (saved === 'en' || saved === 'ar')) {
-            setLanguageState(saved)
+            // Use a macrotask to avoid synchronous setState in effect
+            setTimeout(() => setLanguageState(saved), 0)
         }
     }, [])
 

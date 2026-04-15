@@ -52,7 +52,7 @@ export default function VerifyEmailPage() {
 
                 <div>
                     <p className="text-gray-300 mb-4">
-                        We've sent a verification link to:
+                        We&apos;ve sent a verification link to:
                     </p>
                     <p className="text-white font-medium text-lg">{user?.email}</p>
                 </div>
@@ -92,7 +92,7 @@ export default function VerifyEmailPage() {
                 </div>
 
                 <p className="text-sm text-gray-400">
-                    Didn't receive the email? Check your spam folder or try resending.
+                    Didn&apos;t receive the email? Check your spam folder or try resending.
                 </p>
             </div>
         </AuthLayout>

@@ -7,7 +7,7 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 import { createEvent } from '@/lib/api/events'
-import { formatDateForInput, formatTimeForInput } from '@/lib/date-utils'
+import { formatDateForInput } from '@/lib/date-utils'
 
 export default function CreateEventPage() {
     const router = useRouter()
@@ -31,8 +31,8 @@ export default function CreateEventPage() {
         try {
             const event = await createEvent(formData)
             router.push(`/events/${event.id}`)
-        } catch (err: any) {
-            setError(err.message || 'Failed to create event')
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to create event')
             setLoading(false)
         }
     }

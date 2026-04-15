@@ -14,7 +14,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<EventStats | null>(null)
     const [recentEvents, setRecentEvents] = useState<Event[]>([])
     const [loading, setLoading] = useState(true)
-    const { t, isRTL } = useLanguage()
+    const { t } = useLanguage()
 
     useEffect(() => {
         async function loadData() {

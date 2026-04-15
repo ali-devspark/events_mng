@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import BarcodeDisplay from '@/components/events/BarcodeDisplay'
@@ -31,11 +31,7 @@ export default function EventDetailsPage() {
         price: 0,
     })
 
-    useEffect(() => {
-        loadEventData()
-    }, [params.id])
-
-    async function loadEventData() {
+    const loadEventData = useCallback(async () => {
         try {
             const [eventData, ticketsData] = await Promise.all([
                 getEventById(params.id as string),
@@ -43,20 +39,24 @@ export default function EventDetailsPage() {
             ])
             setEvent(eventData)
             setTickets(ticketsData)
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err))
         } finally {
             setLoading(false)
         }
-    }
+    }, [params.id])
+
+    useEffect(() => {
+        loadEventData()
+    }, [loadEventData])
 
     async function handleDeleteEvent() {
         if (!confirm('Are you sure you want to delete this event?')) return
         try {
             await deleteEvent(params.id as string)
             router.push('/events')
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err))
         }
     }
 
@@ -73,8 +73,8 @@ export default function EventDetailsPage() {
                 price: 0,
             })
             loadEventData()
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err))
         }
     }
 
@@ -83,8 +83,8 @@ export default function EventDetailsPage() {
         try {
             await deleteTicket(ticketId)
             loadEventData()
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err))
         }
     }
 
@@ -265,7 +265,7 @@ export default function EventDetailsPage() {
                         <select
                             className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                             value={ticketForm.type}
-                            onChange={(e) => setTicketForm({ ...ticketForm, type: e.target.value as any })}
+                            onChange={(e) => setTicketForm({ ...ticketForm, type: e.target.value as Ticket['type'] })}
                         >
                             <option value="free">{t.events.details.free}</option>
                             <option value="paid">{t.events.details.paid}</option>
