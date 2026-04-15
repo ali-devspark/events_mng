@@ -12,10 +12,12 @@ import { getEventById, deleteEvent, getTicketsByEventId, createTicket, deleteTic
 import { Event, Ticket, CreateTicketInput } from '@/types'
 import { formatDate, formatTime } from '@/lib/date-utils'
 import Link from 'next/link'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function EventDetailsPage() {
     const params = useParams()
     const router = useRouter()
+    const { t } = useLanguage()
     const [event, setEvent] = useState<Event | null>(null)
     const [tickets, setTickets] = useState<Ticket[]>([])
     const [loading, setLoading] = useState(true)
@@ -93,7 +95,7 @@ export default function EventDetailsPage() {
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-gray-400">Loading event...</p>
+                        <p className="text-gray-400">{t.loading.eventModule}</p>
                     </div>
                 </div>
             </div>
@@ -106,7 +108,7 @@ export default function EventDetailsPage() {
                 <Sidebar />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
-                        <p className="text-red-400">Event not found</p>
+                        <p className="text-red-400">{t.events.details.noEvent}</p>
                     </div>
                 </div>
             </div>
@@ -130,14 +132,17 @@ export default function EventDetailsPage() {
                         <div className="flex items-start justify-between">
                             <div>
                                 <Link href="/events" className="text-sm text-primary-400 hover:text-primary-300 mb-2 inline-block">
-                                    ← Back to Events
+                                    {t.events.title}/ 
                                 </Link>
+                                <div className="text-sm text-primary-400 hover:text-primary-300 mb-2 inline-block">
+                                    {t.events.details.title}
+                                </div>
                                 <h1 className="text-3xl font-bold text-white mb-2">{event.title}</h1>
                                 <p className="text-gray-400">{event.description}</p>
                             </div>
                             <div className="flex gap-3">
                                 <Button variant="outline" onClick={handleDeleteEvent}>
-                                    Delete Event
+                                    {t.events.details.delete}
                                 </Button>
                             </div>
                         </div>
@@ -151,30 +156,30 @@ export default function EventDetailsPage() {
                         {/* Event Details */}
                         <div className="lg:col-span-2 space-y-6">
                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                                <h2 className="text-xl font-bold text-white mb-4">Event Details</h2>
+                                <h2 className="text-xl font-bold text-white mb-4">{t.events.details.title}</h2>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Date</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.date}</p>
                                         <p className="text-white font-medium">{formatDate(event.date)}</p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Time</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.time}</p>
                                         <p className="text-white font-medium">{formatTime(event.time)}</p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Location</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.location}</p>
                                         <p className="text-white font-medium">{event.location}</p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Status</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.status}</p>
                                         <p className="text-white font-medium capitalize">{event.status}</p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Max Attendees</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.maxAttendees}</p>
                                         <p className="text-white font-medium">{event.max_attendees}</p>
                                     </div>
                                     <div>
-                                        <p className="text-gray-400 text-sm mb-1">Required Attendees</p>
+                                        <p className="text-gray-400 text-sm mb-1">{t.events.details.requiredAttendees}</p>
                                         <p className="text-white font-medium">{event.required_attendees}</p>
                                     </div>
                                 </div>
@@ -184,13 +189,14 @@ export default function EventDetailsPage() {
                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
-                                        <h2 className="text-xl font-bold text-white">Tickets</h2>
+                                        <h2 className="text-xl font-bold text-white">{t.events.details.tickets}</h2>
                                         <p className="text-sm text-gray-400">
                                             {totalTickets} / {event.max_attendees} tickets created
                                         </p>
                                     </div>
                                     <Button variant="primary" onClick={() => setShowTicketModal(true)}>
-                                        Add Ticket Type
+                                        {/* <PlusIcon className="w-4 h-4 mr-2" /> */}
+                                        {t.events.details.createTicket}
                                     </Button>
                                 </div>
 
@@ -221,7 +227,7 @@ export default function EventDetailsPage() {
                                     </div>
                                 ) : (
                                     <div className="text-center py-8">
-                                        <p className="text-gray-400">No ticket types created yet</p>
+                                        <p className="text-gray-400">{t.events.details.noTickets}</p>
                                     </div>
                                 )}
                             </div>
@@ -230,7 +236,7 @@ export default function EventDetailsPage() {
                         {/* Barcode */}
                         <div className="lg:col-span-1">
                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 sticky top-24">
-                                <h2 className="text-xl font-bold text-white mb-6 text-center">Event QR Code</h2>
+                                <h2 className="text-xl font-bold text-white mb-6 text-center">{t.events.details.eventQRCode}</h2>
                                 <BarcodeDisplay event={event} size={250} />
                             </div>
                         </div>
@@ -242,11 +248,11 @@ export default function EventDetailsPage() {
             <Modal
                 isOpen={showTicketModal}
                 onClose={() => setShowTicketModal(false)}
-                title="Add Ticket Type"
+                title={t.events.details.addTicket}
             >
                 <form onSubmit={handleCreateTicket} className="space-y-4">
                     <Input
-                        label="Ticket Name"
+                        label={t.events.details.ticketName}
                         type="text"
                         placeholder="e.g., VIP Pass"
                         value={ticketForm.name}
@@ -255,22 +261,22 @@ export default function EventDetailsPage() {
                     />
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-200 mb-2">Type</label>
+                        <label className="block text-sm font-medium text-gray-200 mb-2">{t.events.details.ticketType}</label>
                         <select
                             className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                             value={ticketForm.type}
                             onChange={(e) => setTicketForm({ ...ticketForm, type: e.target.value as any })}
                         >
-                            <option value="free">Free</option>
-                            <option value="paid">Paid</option>
-                            <option value="vip">VIP</option>
-                            <option value="general">General</option>
-                            <option value="early-bird">Early Bird</option>
+                            <option value="free">{t.events.details.free}</option>
+                            <option value="paid">{t.events.details.paid}</option>
+                            <option value="vip">{t.events.details.vip}</option>
+                            <option value="general">{t.events.details.general}</option>
+                            <option value="early-bird">{t.events.details.earlyBird}</option>
                         </select>
                     </div>
 
                     <Input
-                        label="Quantity"
+                        label={t.events.details.ticketQuantity}
                         type="number"
                         min="1"
                         max={event.max_attendees - totalTickets}
@@ -281,7 +287,7 @@ export default function EventDetailsPage() {
                     />
 
                     <Input
-                        label="Price"
+                        label={t.events.details.ticketPrice}
                         type="number"
                         min="0"
                         step="0.01"

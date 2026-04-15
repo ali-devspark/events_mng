@@ -41,7 +41,7 @@ export default function DashboardPage() {
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-gray-400">Loading dashboard...</p>
+                        <p className="text-gray-400">{t.loading.dashboardModule}</p>
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
                     {/* Statistics */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <StatCard
-                            title="Total Events"
+                            title={t.dashboard.totalEvents}
                             value={stats?.total_events || 0}
                             icon={
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,7 +82,7 @@ export default function DashboardPage() {
                             color="primary"
                         />
                         <StatCard
-                            title="Upcoming Events"
+                            title={t.dashboard.upcomingEvents}
                             value={stats?.upcoming_events || 0}
                             icon={
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +92,7 @@ export default function DashboardPage() {
                             color="accent"
                         />
                         <StatCard
-                            title="Finished Events"
+                            title={t.dashboard.finishedEvents}
                             value={stats?.finished_events || 0}
                             icon={
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +102,7 @@ export default function DashboardPage() {
                             color="success"
                         />
                         <StatCard
-                            title="Total Attendees"
+                            title={t.dashboard.totalAttendees}
                             value={stats?.total_attendees || 0}
                             icon={
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,14 +115,14 @@ export default function DashboardPage() {
 
                     {/* Quick Actions */}
                     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                        <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
+                        <h2 className="text-xl font-bold text-white mb-4">{t.dashboard.quickActions}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Link href="/events/create">
                                 <Button variant="primary" fullWidth>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Create New Event
+                                    {t.dashboard.createEvent}
                                 </Button>
                             </Link>
                             <Link href="/events">
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    View All Events
+                                    {t.dashboard.viewAll}
                                 </Button>
                             </Link>
                             <Link href="/calendar">
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    Open Calendar
+                                    {t.dashboard.openCalendar}
                                 </Button>
                             </Link>
                         </div>
@@ -147,9 +147,9 @@ export default function DashboardPage() {
                     {/* Recent Events */}
                     <div>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-white">Recent Events</h2>
+                            <h2 className="text-2xl font-bold text-white">{t.dashboard.recentEvents}</h2>
                             <Link href="/events" className="text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors">
-                                View all →
+                                {t.dashboard.viewAll}
                             </Link>
                         </div>
                         {recentEvents.length > 0 ? (
@@ -163,11 +163,11 @@ export default function DashboardPage() {
                                 <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <h3 className="text-lg font-semibold text-white mb-2">No events yet</h3>
-                                <p className="text-gray-400 mb-6">Create your first event to get started</p>
+                                <h3 className="text-lg font-semibold text-white mb-2">{t.events.noEvents}</h3>
+                                <p className="text-gray-400 mb-6">{t.events.createFirstEventDesc}</p>
                                 <Link href="/events/create">
                                     <Button variant="primary">
-                                        Create Event
+                                        {t.events.create}
                                     </Button>
                                 </Link>
                             </div>

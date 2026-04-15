@@ -99,11 +99,13 @@ interface Translations {
         welcome: string
         totalEvents: string
         upcomingEvents: string
+        finishedEvents: string
         totalAttendees: string
         recentEvents: string
         quickActions: string
         createEvent: string
         viewAll: string
+        openCalendar: string
     }
     // Events
     events: {
@@ -123,6 +125,34 @@ interface Translations {
         attendees: string
         tickets: string
         noEvents: string
+        createFirstEventDesc: string
+        details: {
+            title: string
+            eventDetails: string
+            noEvent: string
+            delete: string
+            tickets: string
+            attendees: string
+            createTicket: string
+            date: string
+            time: string
+            location: string
+            status: string
+            maxAttendees: string
+            requiredAttendees: string
+            noTickets: string
+            eventQRCode: string
+            addTicket: string
+            ticketName: string
+            ticketType: string
+            ticketQuantity: string
+            ticketPrice: string
+            free: string
+            paid: string
+            vip: string
+            general: string
+            earlyBird: string
+        }
     }
     // Settings
     settings: {
@@ -227,11 +257,13 @@ const translations: Record<Language, Translations> = {
             welcome: 'Welcome to your event management dashboard',
             totalEvents: 'Total Events',
             upcomingEvents: 'Upcoming Events',
+            finishedEvents: 'Finished Events',
             totalAttendees: 'Total Attendees',
             recentEvents: 'Recent Events',
             quickActions: 'Quick Actions',
             createEvent: 'Create Event',
             viewAll: 'View All',
+            openCalendar: 'Open Calendar',
         },
         events: {
             title: 'Events',
@@ -250,6 +282,34 @@ const translations: Record<Language, Translations> = {
             attendees: 'Attendees',
             tickets: 'Tickets',
             noEvents: 'No events found',
+            createFirstEventDesc: 'Create your first event to get started',
+            details: {
+                title: 'Event Details',
+                eventDetails: 'Event Details',
+                noEvent: 'No Event Found',
+                delete: 'Delete Event',
+                tickets: 'Tickets',
+                attendees: 'Attendees',
+                createTicket: 'Create Ticket',
+                date: 'Date',
+                time: 'Time',
+                location: 'Location',
+                status: 'Status',
+                maxAttendees: 'Max Attendees',
+                requiredAttendees: 'Required Attendees',
+                noTickets: 'No Tickets Created Yet',
+                eventQRCode: 'Event QR Code',
+                addTicket: 'Add Ticket',
+                ticketName: 'Ticket Name',
+                ticketType: 'Ticket Type',
+                ticketQuantity: 'Ticket Quantity',
+                ticketPrice: 'Ticket Price',
+                free: 'Free',
+                paid: 'Paid',
+                vip: 'VIP',
+                general: 'General',
+                earlyBird: 'Early Bird',
+            }
         },
         settings: {
             title: 'Settings Aloosh',
@@ -309,10 +369,10 @@ const translations: Record<Language, Translations> = {
             logout: 'تسجيل الخروج',
         },
         loading: {
-            dashboardModule: 'جارٍ تحميل الصفحة الرئيسية...',
-            eventModule: 'جارٍ تحميل الفعاليات...',
-            calendarModule: 'جارٍ تحميل التقويم...',
-            settingsModule: 'جارٍ تحميل الإعدادات...',
+            dashboardModule: 'جارٍ تحميل لوحة التحكم ...',
+            eventModule: 'جارٍ تحميل الفعاليات ...',
+            calendarModule: 'جارٍ تحميل التقويم ...',
+            settingsModule: 'جارٍ تحميل الإعدادات ...',
         },
         common: {
             save: 'حفظ',
@@ -352,11 +412,13 @@ const translations: Record<Language, Translations> = {
             welcome: 'مرحباً بك لوحة التحكم لإدارة فعالياتك',
             totalEvents: 'إجمالي الفعاليات',
             upcomingEvents: 'الفعاليات القادمة',
+            finishedEvents: 'الفعاليات المنتهية',
             totalAttendees: 'إجمالي الحضور',
             recentEvents: 'الفعاليات الأخيرة',
             quickActions: 'الإجراءات السريعة',
             createEvent: 'إنشاء فعالية',
             viewAll: 'عرض الكل',
+            openCalendar: 'فتح التقويم',
         },
         events: {
             title: 'الفعاليات',
@@ -375,6 +437,34 @@ const translations: Record<Language, Translations> = {
             attendees: 'الحضور',
             tickets: 'التذاكر',
             noEvents: 'لا توجد فعاليات',
+            createFirstEventDesc: 'أنشئ أول فعالية لك للبدء',
+            details: {
+                title: 'تفاصيل الفعالية',
+                eventDetails: 'تفاصيل الفعالية',
+                noEvent: 'لا توجد فعالية',
+                delete: 'حذف الفعالية',
+                tickets: 'التذاكر',
+                attendees: 'الحضور',
+                createTicket: 'إنشاء تذكرة',
+                date: 'التاريخ',
+                time: 'الوقت',
+                location: 'الموقع',
+                status: 'الحالة',
+                maxAttendees: 'أقصى عدد حضور',
+                requiredAttendees: 'عدد الحضور المطلوب',
+                noTickets: 'لا توجد تذاكر بعد',
+                eventQRCode: 'رمز QR الخاص بالفعالية',
+                addTicket: 'إضافة تذكرة',
+                ticketName: 'اسم التذكرة',
+                ticketType: 'نوع التذكرة',
+                ticketQuantity: 'كمية التذكرة',
+                ticketPrice: 'سعر التذكرة',
+                free: 'مجاني',
+                paid: 'مدفوع',
+                vip: 'VIP',
+                general: 'عام',
+                earlyBird: 'مبكر',
+            }
         },
         settings: {
             title: 'الإعدادات',

@@ -4,9 +4,11 @@ import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import LanguageToggle from '@/components/ui/LanguageToggle'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomePage() {
     const { t, isRTL } = useLanguage()
+    const { user } = useAuth()
 
     const features = [
         {
@@ -118,12 +120,20 @@ export default function HomePage() {
                         {/* Actions */}
                         <div className="flex items-center gap-3">
                             <LanguageToggle />
-                            <Link href="/login">
-                                <Button variant="outline" size="sm">{t.landing.signIn}</Button>
-                            </Link>
-                            <Link href="/register" className="hidden sm:block">
-                                <Button variant="primary" size="sm">{t.landing.getStarted}</Button>
-                            </Link>
+                            {user ? (
+                                <Link href="/dashboard">
+                                    <Button variant="primary" size="sm">{t.nav.dashboard}</Button>
+                                </Link>
+                            ) : (
+                                <div className="flex items-center gap-3">
+                                    <Link href="/login">
+                                        <Button variant="outline" size="sm">{t.landing.signIn}</Button>
+                                    </Link>
+                                    <Link href="/register" className="hidden sm:block">
+                                        <Button variant="primary" size="sm">{t.landing.getStarted}</Button>
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
