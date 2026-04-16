@@ -113,7 +113,7 @@ export default function HomePage() {
                                 </svg>
                             </div>
                             <span className="text-white font-bold text-lg">
-                                {isRTL ? 'نظمني ' : 'Nazemny'}
+                                {t.landing.systemTitle}
                             </span>
                         </div>
 
@@ -300,7 +300,7 @@ export default function HomePage() {
                             </svg>
                         </div>
                         <span className="text-gray-400 text-sm">
-                            {isRTL ? '© 2026 نظمني. جميع الحقوق محفوظة.' : '© 2026 Nazemny. All rights reserved.'}
+                            {t.landing.copyright}
                         </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600 text-sm">

@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   event_id UUID REFERENCES events(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('free', 'paid', 'vip', 'general', 'early-bird')),
+  -- type TEXT NOT NULL CHECK (type IN ('free', 'paid', 'vip', 'general', 'early-bird')),
   quantity INTEGER NOT NULL CHECK (quantity > 0),
   price DECIMAL(10, 2) DEFAULT 0 CHECK (price >= 0),
   sold INTEGER DEFAULT 0 CHECK (sold >= 0 AND sold <= quantity),
@@ -47,6 +47,46 @@ CREATE TABLE IF NOT EXISTS tickets (
 CREATE INDEX IF NOT EXISTS tickets_event_id_idx ON tickets(event_id);
 
 -- =====================================================
+-- PROFILES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  avatar_url TEXT,
+  subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'premium', 'professional')),
+  max_events_per_month INTEGER DEFAULT 5,
+  max_attendees_per_event INTEGER DEFAULT 50,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own profile"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile"
+  ON profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+-- Function to handle new user profile creation
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'avatar_url');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger for new user
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- =====================================================
 -- ATTENDEES TABLE
 -- =====================================================
 CREATE TABLE IF NOT EXISTS attendees (
@@ -56,6 +96,8 @@ CREATE TABLE IF NOT EXISTS attendees (
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
+  company TEXT,
+  registration_source TEXT DEFAULT 'manual',
   checked_in BOOLEAN DEFAULT FALSE,
   checked_in_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -153,6 +195,10 @@ CREATE POLICY "Users can create attendees for their events"
       AND events.user_id = auth.uid()
     )
   );
+
+CREATE POLICY "Anyone can register for an event"
+  ON attendees FOR INSERT
+  WITH CHECK (true);
 
 CREATE POLICY "Users can update attendees for their events"
   ON attendees FOR UPDATE

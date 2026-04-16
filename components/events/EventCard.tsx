@@ -2,12 +2,15 @@ import React from 'react'
 import Link from 'next/link'
 import { Event } from '@/types'
 import { formatDate, formatTime } from '@/lib/date-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface EventCardProps {
     event: Event
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
+    const { t, language } = useLanguage()
+
     const statusColors = {
         upcoming: 'bg-primary-500/20 text-primary-400 border-primary-500/30',
         ongoing: 'bg-success-500/20 text-success-400 border-success-500/30',
@@ -39,6 +42,13 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         ),
     }
 
+    // const statusLabels = {
+    //     upcoming: t.events.upcomingEvents.split(' ')[0], // Simplification for card
+    //     ongoing: t.events.status, // or add specific keys for single words
+    //     finished: t.events.finishedEvents.split(' ')[0],
+    //     cancelled: t.common.error // or add specific key
+    // }
+
     return (
         <Link href={`/events/${event.id}`}>
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all duration-200 group">
@@ -53,7 +63,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                     </div>
                     <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${statusColors[event.status]}`}>
                         {statusIcons[event.status]}
-                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                        {event.status}
                     </span>
                 </div>
 
@@ -62,13 +72,13 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {formatDate(event.date)}
+                        {formatDate(event.date, language)}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-300">
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {formatTime(event.time)}
+                        {formatTime(event.time, language)}
                     </div>
                 </div>
 
@@ -80,11 +90,11 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                         </svg>
                         {event.location}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300 ml-auto">
+                    <div className="flex items-center gap-2 text-sm text-gray-300 ml-auto rtl:mr-auto rtl:ml-0">
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        {event.max_attendees} max
+                        {event.max_attendees} {t.events.details.maxAttendees.split(' ')[0]}
                     </div>
                 </div>
             </div>

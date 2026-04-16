@@ -1,24 +1,33 @@
 // Date and time utilities
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date, language: 'en' | 'ar' = 'en'): string {
     const d = new Date(date)
-    return d.toLocaleDateString('en-US', {
+    return d.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
     })
 }
 
-export function formatTime(time: string): string {
+export function formatTime(time: string, language: 'en' | 'ar' = 'en'): string {
+    if (!time) return ''
     const [hours, minutes] = time.split(':')
     const hour = parseInt(hours)
-    const ampm = hour >= 12 ? 'PM' : 'AM'
-    const displayHour = hour % 12 || 12
-    return `${displayHour}:${minutes} ${ampm}`
+    
+    if (language === 'ar') {
+        const ampm = hour >= 12 ? 'م' : 'ص'
+        const displayHour = hour % 12 || 12
+        return `${displayHour}:${minutes} ${ampm}`
+    } else {
+        const ampm = hour >= 12 ? 'PM' : 'AM'
+        const displayHour = hour % 12 || 12
+        return `${displayHour}:${minutes} ${ampm}`
+    }
 }
 
-export function formatDateTime(date: string, time: string): string {
-    return `${formatDate(date)} at ${formatTime(time)}`
+export function formatDateTime(date: string, time: string, language: 'en' | 'ar' = 'en'): string {
+    const connector = language === 'ar' ? ' في ' : ' at '
+    return `${formatDate(date, language)}${connector}${formatTime(time, language)}`
 }
 
 export function isEventUpcoming(date: string, time: string): boolean {

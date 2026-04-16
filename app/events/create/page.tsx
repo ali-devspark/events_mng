@@ -8,9 +8,11 @@ import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 import { createEvent } from '@/lib/api/events'
 import { formatDateForInput } from '@/lib/date-utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function CreateEventPage() {
     const router = useRouter()
+    const { t } = useLanguage()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [formData, setFormData] = useState({
@@ -32,7 +34,7 @@ export default function CreateEventPage() {
             const event = await createEvent(formData)
             router.push(`/events/${event.id}`)
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Failed to create event')
+            setError(err instanceof Error ? err.message : t.events.createError)
             setLoading(false)
         }
     }
@@ -49,8 +51,8 @@ export default function CreateEventPage() {
             <div className="flex-1 relative z-10">
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
                     <div className="px-8 py-6">
-                        <h1 className="text-3xl font-bold text-white mb-2">Create New Event</h1>
-                        <p className="text-gray-400">Fill in the details to create your event</p>
+                        <h1 className="text-3xl font-bold text-white mb-2">{t.events.create}</h1>
+                        <p className="text-gray-400">{t.events.description}</p>
                     </div>
                 </header>
 
@@ -61,9 +63,9 @@ export default function CreateEventPage() {
                                 {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
                                 <Input
-                                    label="Event Title"
+                                    label={t.events.eventTitle}
                                     type="text"
-                                    placeholder="e.g., Tech Conference 2024"
+                                    placeholder={t.events.eventTitle}
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     required
@@ -71,12 +73,12 @@ export default function CreateEventPage() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-200 mb-2">
-                                        Description
+                                        {t.events.eventDescription}
                                     </label>
                                     <textarea
                                         className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                                         rows={4}
-                                        placeholder="Describe your event..."
+                                        placeholder={t.events.eventDescriptionPlaceholder}
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
@@ -84,14 +86,14 @@ export default function CreateEventPage() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <Input
-                                        label="Date"
+                                        label={t.events.eventDate}
                                         type="date"
                                         value={formData.date}
                                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                         required
                                     />
                                     <Input
-                                        label="Time"
+                                        label={t.events.eventTime}
                                         type="time"
                                         value={formData.time}
                                         onChange={(e) => setFormData({ ...formData, time: e.target.value })}
@@ -100,9 +102,9 @@ export default function CreateEventPage() {
                                 </div>
 
                                 <Input
-                                    label="Location"
+                                    label={t.events.eventLocation}
                                     type="text"
-                                    placeholder="e.g., Convention Center, Room 101"
+                                    placeholder={t.events.eventLocationPlaceholder}
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                     required
@@ -110,28 +112,28 @@ export default function CreateEventPage() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <Input
-                                        label="Maximum Attendees"
+                                        label={t.events.maxAttendeesLabel}
                                         type="number"
                                         min="1"
                                         value={formData.max_attendees}
                                         onChange={(e) => setFormData({ ...formData, max_attendees: parseInt(e.target.value) })}
                                         required
-                                        helperText="Total capacity for this event"
+                                        helperText={t.events.maxAttendeesHelper}
                                     />
                                     <Input
-                                        label="Required Attendees"
+                                        label={t.events.requiredAttendeesLabel}
                                         type="number"
                                         min="0"
                                         max={formData.max_attendees}
                                         value={formData.required_attendees}
                                         onChange={(e) => setFormData({ ...formData, required_attendees: parseInt(e.target.value) })}
-                                        helperText="Minimum attendees needed"
+                                        helperText={t.events.requiredAttendeesHelper}
                                     />
                                 </div>
 
                                 <div className="flex gap-4 pt-4">
                                     <Button type="submit" variant="primary" fullWidth loading={loading}>
-                                        Create Event
+                                        {loading ? t.events.creating : t.events.createButton}
                                     </Button>
                                     <Button
                                         type="button"
@@ -139,7 +141,7 @@ export default function CreateEventPage() {
                                         fullWidth
                                         onClick={() => router.back()}
                                     >
-                                        Cancel
+                                        {t.events.cancelButton}
                                     </Button>
                                 </div>
                             </form>
@@ -150,3 +152,5 @@ export default function CreateEventPage() {
         </div>
     )
 }
+//     )
+// }

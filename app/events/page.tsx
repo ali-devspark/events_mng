@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 export default function EventsPage() {
     const [events, setEvents] = useState<Event[]>([])
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
-    const [filter, setFilter] = useState<'all' | 'upcoming' | 'finished'>('all')
+    const [filter, setFilter] = useState<'all' | 'upcoming' | 'finished' | 'today'>('all')
     const [loading, setLoading] = useState(true)
     const { t } = useLanguage()
 
@@ -32,8 +32,11 @@ export default function EventsPage() {
     }, [])
 
     useEffect(() => {
+        const todayStr = new Date().toISOString().split('T')[0]
         if (filter === 'all') {
             setFilteredEvents(events)
+        } else if (filter === 'today') {
+            setFilteredEvents(events.filter(e => e.date === todayStr))
         } else {
             setFilteredEvents(events.filter(e => e.status === filter))
         }
@@ -82,9 +85,18 @@ export default function EventsPage() {
                             {t.events.totalEvents}
                         </button>
                         <button
+                            onClick={() => setFilter('today')}
+                            className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'today'
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                }`}
+                        >
+                            {t.common.today}
+                        </button>
+                        <button
                             onClick={() => setFilter('upcoming')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'upcoming'
-                                    ? 'bg-primary-500 text-white'
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
                                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                 }`}
                         >
@@ -93,7 +105,7 @@ export default function EventsPage() {
                         <button
                             onClick={() => setFilter('finished')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'finished'
-                                    ? 'bg-primary-500 text-white'
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
                                     : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                 }`}
                         >
@@ -120,12 +132,12 @@ export default function EventsPage() {
                             <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
+                            <h3 className="text-lg font-semibold text-white mb-2">{t.events.noEvents}</h3>
                             <p className="text-gray-400 mb-6">
-                                {filter === 'all' ? 'Create your first event to get started' : `No ${filter} events`}
+                                {filter === 'all' ? t.events.createFirstEventDesc : filter === 'upcoming' ? t.events.createUpcomingDesc : t.events.createFinishedDesc}
                             </p>
                             <Link href="/events/create">
-                                <Button variant="primary">Create Event</Button>
+                                <Button variant="primary">{t.events.create}</Button>
                             </Link>
                         </div>
                     )}

@@ -81,7 +81,7 @@ export default function PasswordSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <Tabs tabs={tabs} currentTab="password" />
+            <Tabs tabs={tabs} activeTab="password" />
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8">
                 <h2 className="text-xl font-bold text-white mb-6">Change Password</h2>

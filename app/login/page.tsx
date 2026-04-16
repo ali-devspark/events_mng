@@ -8,10 +8,12 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function LoginPage() {
     const router = useRouter()
     const { signIn } = useAuth()
+    const { t, isRTL } = useLanguage()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -34,16 +36,16 @@ export default function LoginPage() {
 
     return (
         <AuthLayout
-            title="Welcome Back"
-            subtitle="Sign in to your account to continue"
+            title={t.auth.login.title}
+            subtitle={t.auth.login.subtitle}
         >
             <form onSubmit={handleSubmit} className="space-y-6">
                 {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
                 <Input
-                    label="Email Address"
+                    label={t.auth.login.email}
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t.auth.login.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -51,9 +53,9 @@ export default function LoginPage() {
                 />
 
                 <Input
-                    label="Password"
+                    label={t.auth.login.password}
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder={t.auth.login.passwordPlaceholder}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -66,18 +68,18 @@ export default function LoginPage() {
                             type="checkbox"
                             className="w-4 h-4 rounded border-gray-600 bg-white/5 text-primary-500 focus:ring-primary-500 focus:ring-offset-0"
                         />
-                        Remember me
+                        {t.auth.login.rememberMe}
                     </label>
                     <Link
                         href="/forgot-password"
                         className="text-primary-400 hover:text-primary-300 transition-colors"
                     >
-                        Forgot password?
+                        {t.auth.login.forgotPassword}
                     </Link>
                 </div>
 
                 <Button type="submit" variant="primary" fullWidth loading={loading}>
-                    Sign In
+                    {t.auth.login.signIn}
                 </Button>
 
                 <div className="relative">
@@ -85,23 +87,23 @@ export default function LoginPage() {
                         <div className="w-full border-t border-white/10"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-4 bg-gray-800/50 text-gray-400">Or continue with</span>
+                        <span className="px-4 bg-gray-800/50 text-gray-400">{t.auth.login.orContinueWith}</span>
                     </div>
                 </div>
 
                 <Link href="/phone-auth">
                     <Button type="button" variant="outline" fullWidth>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                        Sign in with Phone
+                        {t.auth.login.signInPhone}
                     </Button>
                 </Link>
 
                 <p className="text-center text-gray-400 text-sm">
-                    Don&apos;t have an account?{' '}
+                    {t.auth.login.noAccount}{' '}
                     <Link href="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                        Sign up
+                        {t.auth.login.signUp}
                     </Link>
                 </p>
             </form>

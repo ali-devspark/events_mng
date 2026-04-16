@@ -46,7 +46,7 @@ export default function ProfileSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <Tabs tabs={tabs} currentTab="profile" />
+            <Tabs tabs={tabs} activeTab="profile" />
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8">
                 {success && <Alert type="success" message={success} onClose={() => setSuccess('')} />}

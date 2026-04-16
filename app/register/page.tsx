@@ -7,9 +7,11 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function RegisterPage() {
     const { signUp } = useAuth()
+    const { t, isRTL } = useLanguage()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -23,12 +25,12 @@ export default function RegisterPage() {
 
         // Validation
         if (password !== confirmPassword) {
-            setError('Passwords do not match')
+            setError(t.auth.register.passwordsMismatch)
             return
         }
 
         if (password.length < 8) {
-            setError('Password must be at least 8 characters')
+            setError(t.auth.register.passwordMinLength)
             return
         }
 
@@ -48,8 +50,8 @@ export default function RegisterPage() {
     if (success) {
         return (
             <AuthLayout
-                title="Check Your Email"
-                subtitle="We've sent you a verification link"
+                title={t.auth.register.successTitle}
+                subtitle={t.auth.register.successSubtitle}
             >
                 <div className="text-center space-y-4">
                     <div className="w-16 h-16 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
@@ -59,12 +61,12 @@ export default function RegisterPage() {
                     </div>
                     <Alert
                         type="success"
-                        message={`A verification email has been sent to ${email}. Please check your inbox and click the verification link to activate your account.`}
+                        message={t.auth.register.successAlert.replace('{email}', email)}
                     />
                     <div className="pt-4">
                         <Link href="/login">
                             <Button variant="primary" fullWidth>
-                                Go to Login
+                                {t.auth.register.goToLogin}
                             </Button>
                         </Link>
                     </div>
@@ -75,16 +77,16 @@ export default function RegisterPage() {
 
     return (
         <AuthLayout
-            title="Create Account"
-            subtitle="Sign up to get started"
+            title={t.auth.register.title}
+            subtitle={t.auth.register.subtitle}
         >
             <form onSubmit={handleSubmit} className="space-y-6">
                 {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
                 <Input
-                    label="Email Address"
+                    label={t.auth.login.email}
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t.auth.login.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -92,20 +94,20 @@ export default function RegisterPage() {
                 />
 
                 <Input
-                    label="Password"
+                    label={t.auth.login.password}
                     type="password"
-                    placeholder="Create a password"
+                    placeholder={t.auth.login.passwordPlaceholder}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoComplete="new-password"
-                    helperText="Must be at least 6 characters"
+                    helperText={t.auth.register.passwordHelper}
                 />
 
                 <Input
-                    label="Confirm Password"
+                    label={t.auth.register.confirmPassword}
                     type="password"
-                    placeholder="Confirm your password"
+                    placeholder={t.auth.register.confirmPlaceholder}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -113,7 +115,7 @@ export default function RegisterPage() {
                 />
 
                 <Button type="submit" variant="primary" fullWidth loading={loading}>
-                    Create Account
+                    {t.auth.register.createAccount}
                 </Button>
 
                 <div className="relative">
@@ -121,23 +123,23 @@ export default function RegisterPage() {
                         <div className="w-full border-t border-white/10"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-4 bg-gray-800/50 text-gray-400">Or sign up with</span>
+                        <span className="px-4 bg-gray-800/50 text-gray-400">{t.auth.register.orSignUpWith}</span>
                     </div>
                 </div>
 
                 <Link href="/phone-auth">
                     <Button type="button" variant="outline" fullWidth>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
-                        Sign up with Phone
+                        {t.auth.register.signUpPhone}
                     </Button>
                 </Link>
 
                 <p className="text-center text-gray-400 text-sm">
-                    Already have an account?{' '}
+                    {t.auth.register.hasAccount}{' '}
                     <Link href="/login" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                        Sign in
+                        {t.auth.register.signIn}
                     </Link>
                 </p>
             </form>

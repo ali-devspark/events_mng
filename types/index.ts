@@ -12,6 +12,20 @@ export interface Event {
     required_attendees: number
     barcode: string
     status: 'upcoming' | 'ongoing' | 'finished' | 'cancelled'
+    is_public?: boolean
+    created_at: string
+    updated_at: string
+}
+
+export type SubscriptionTier = 'free' | 'premium' | 'professional'
+
+export interface Profile {
+    id: string
+    full_name: string | null
+    avatar_url: string | null
+    subscription_tier: SubscriptionTier
+    max_events_per_month: number
+    max_attendees_per_event: number
     created_at: string
     updated_at: string
 }
@@ -20,7 +34,6 @@ export interface Ticket {
     id: string
     event_id: string
     name: string
-    type: 'free' | 'paid' | 'vip' | 'general' | 'early-bird'
     quantity: number
     price: number
     sold: number
@@ -35,6 +48,8 @@ export interface Attendee {
     name: string
     email: string
     phone?: string
+    company?: string
+    registration_source: 'manual' | 'public_link'
     checked_in: boolean
     checked_in_at?: string
     created_at: string
@@ -62,7 +77,6 @@ export interface CreateEventInput {
 export interface CreateTicketInput {
     event_id: string
     name: string
-    type: 'free' | 'paid' | 'vip' | 'general' | 'early-bird'
     quantity: number
     price: number
 }
@@ -73,6 +87,7 @@ export interface CreateAttendeeInput {
     name: string
     email: string
     phone?: string
+    company?: string
 }
 
 export interface EventWithTickets extends Event {
@@ -85,5 +100,6 @@ export interface CalendarEvent {
     title: string
     date: string
     time: string
+    location: string
     status: Event['status']
 }

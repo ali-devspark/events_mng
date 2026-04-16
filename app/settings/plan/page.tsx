@@ -82,7 +82,7 @@ export default function PlanSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <Tabs tabs={tabs} currentTab="plan" />
+            <Tabs tabs={tabs} activeTab="plan" />
 
             <div className="space-y-6">
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8">

@@ -7,6 +7,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/contexts/LanguageContext'
 import LanguageToggle from '@/components/ui/LanguageToggle'
+// import { getProfile } from '@/lib/api/profiles'
+// import { Profile } from '@/types'
 
 const Sidebar: React.FC = () => {
     const pathname = usePathname()
@@ -20,7 +22,13 @@ const Sidebar: React.FC = () => {
     }
 
     // Extract display name and avatar from user metadata
+    // async function loadProfile() {
+    //     const profileData = await getProfile()
+    //     return profileData
+    // }
+    // const profileData = loadProfile()
     const displayName =
+        // profileData?.full_name ||
         user?.user_metadata?.full_name ||
         user?.user_metadata?.name ||
         user?.email?.split('@')[0] ||
@@ -66,8 +74,17 @@ const Sidebar: React.FC = () => {
             ),
         },
         {
+            name: t.nav.ticketScanner,
+            href: '/scanner',
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+            ),
+        },
+        {
             name: t.nav.settings,
-            href: '/settings/profile',
+            href: '/settings',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -93,11 +110,9 @@ const Sidebar: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-lg font-bold text-white leading-none">
-                            {/* {isRTL ? 'نظمني' : 'Nazemny'} */}
                             {t.nav.systemTitle}
                         </h1>
                         <p className="text-[11px] text-gray-500 mt-0.5">
-                            {/* {isRTL ? 'Event Management' : 'إدارة الفعاليات'} */}
                             {t.nav.systemDesc}
                         </p>
                     </div>

@@ -17,6 +17,18 @@ export async function getEvents() {
     return data as Event[]
 }
 
+export async function getTodayEvents() {
+    const today = new Date().toISOString().split('T')[0]
+    const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('date', today)
+        .order('time', { ascending: true })
+
+    if (error) throw error
+    return data as Event[]
+}
+
 export async function getEventById(id: string) {
     const { data, error } = await supabase
         .from('events')
@@ -165,6 +177,20 @@ export async function createAttendee(input: CreateAttendeeInput) {
     const { data, error } = await supabase
         .from('attendees')
         .insert(input)
+        .select()
+        .single()
+
+    if (error) throw error
+    return data as Attendee
+}
+
+export async function createPublicAttendee(input: CreateAttendeeInput) {
+    const { data, error } = await supabase
+        .from('attendees')
+        .insert({
+            ...input,
+            registration_source: 'public_link'
+        })
         .select()
         .single()
 
