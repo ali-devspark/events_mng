@@ -31,13 +31,14 @@ const zodResolver = (schema: z.ZodSchema) => async (data: unknown) => {
 export default function PublicRegistrationPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const router = useRouter()
-    const { t, isRTL } = useLanguage()
+    const { t, isRTL, language } = useLanguage()
     const [event, setEvent] = useState<Event | null>(null)
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [ticketUrl, setTicketUrl] = useState<string | null>(null)
+    const [isSoldOut, setIsSoldOut] = useState(false)
 
     const registrationSchema = useMemo(() => z.object({
         name: z.string().min(2, t.registration.validation.nameShort),
@@ -97,7 +98,12 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
             setSuccess(true)
         } catch (err: unknown) {
             console.error('Registration error:', err)
-            setError(t.common.error)
+            if (err instanceof Error && err.message === 'EVENT_SOLD_OUT') {
+                setIsSoldOut(true)
+                setError(language === 'ar' ? 'عذراً، نفدت جميع تذاكر هذه الفعالية' : 'Sorry, this event is sold out')
+            } else {
+                setError(t.common.error)
+            }
         } finally {
             setSubmitting(false)
         }
@@ -111,7 +117,7 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         )
     }
 
-    if (!event || error && !success) {
+    if (!event || (error && !success && !isSoldOut)) {
         return (
             <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
                 <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">

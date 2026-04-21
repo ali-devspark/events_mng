@@ -44,7 +44,8 @@ export async function createEvent(input: CreateEventInput) {
     // Generate unique barcode
     const barcode = `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) throw new Error('Not authenticated')
 
     const { data, error } = await supabase
@@ -218,7 +219,8 @@ export async function checkInAttendee(id: string) {
 // =====================================================
 
 export async function getUserEventStats(): Promise<EventStats> {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) throw new Error('Not authenticated')
 
     const { data, error } = await supabase

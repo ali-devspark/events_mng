@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback, use } from 'react'
+import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import BarcodeDisplay from '@/components/events/BarcodeDisplay'
 import Button from '@/components/ui/Button'
@@ -16,21 +16,30 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import Tabs from '@/components/ui/Tabs'
 import { getAttendeesByEventId, checkInAttendee } from '@/lib/api/events'
 import { Attendee } from '@/types'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { useToast } from '@/contexts/ToastContext'
 
-export default function EventDetailsPage() {
-    const params = useParams()
+export default function EventDetailsPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const params = use(paramsPromise)
     const router = useRouter()
-    const { t } = useLanguage()
+    const { t, isRTL } = useLanguage()
+    const { showToast } = useToast()
+    
     const [event, setEvent] = useState<Event | null>(null)
     const [tickets, setTickets] = useState<Ticket[]>([])
     const [attendees, setAttendees] = useState<Attendee[]>([])
     const [activeTab, setActiveTab] = useState('overview')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    
     const [showTicketModal, setShowTicketModal] = useState(false)
+    const [showDeleteEventConfirm, setShowDeleteEventConfirm] = useState(false)
+    const [ticketToDelete, setTicketToDelete] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
+    
     const [publicLink, setPublicLink] = useState('')
     const [ticketForm, setTicketForm] = useState<CreateTicketInput>({
-        event_id: params.id as string,
+        event_id: params.id,
         name: '',
         quantity: 1,
         price: 0,
@@ -39,9 +48,9 @@ export default function EventDetailsPage() {
     const loadEventData = useCallback(async () => {
         try {
             const [eventData, ticketsData, attendeesData] = await Promise.all([
-                getEventById(params.id as string),
-                getTicketsByEventId(params.id as string),
-                getAttendeesByEventId(params.id as string),
+                getEventById(params.id),
+                getTicketsByEventId(params.id),
+                getAttendeesByEventId(params.id),
             ])
             setEvent(eventData)
             setTickets(ticketsData)
@@ -58,13 +67,30 @@ export default function EventDetailsPage() {
         loadEventData()
     }, [loadEventData])
 
-    async function handleDeleteEvent() {
-        if (!confirm(t.events.details.deleteConfirm)) return
+    async function handleConfirmDeleteEvent() {
+        setIsDeleting(true)
         try {
-            await deleteEvent(params.id as string)
+            await deleteEvent(params.id)
+            showToast(t.events.details.deleteSuccess)
             router.push('/events')
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
+            showToast(err instanceof Error ? err.message : t.events.details.deleteError, 'error')
+            setIsDeleting(false)
+        }
+    }
+
+    async function handleConfirmDeleteTicket() {
+        if (!ticketToDelete) return
+        setIsDeleting(true)
+        try {
+            await deleteTicket(ticketToDelete)
+            showToast(t.events.details.deleteTicketSuccess)
+            setTicketToDelete(null)
+            loadEventData()
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : t.events.details.deleteTicketError, 'error')
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -72,48 +98,46 @@ export default function EventDetailsPage() {
         e.preventDefault()
         try {
             await createTicket(ticketForm)
+            showToast(t.events.details.ticketCreated)
             setShowTicketModal(false)
             setTicketForm({
-                event_id: params.id as string,
+                event_id: params.id,
                 name: '',
                 quantity: 1,
                 price: 0,
             })
             loadEventData()
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
-        }
-    }
-
-    async function handleDeleteTicket(ticketId: string) {
-        if (!confirm(t.events.details.deleteTicketConfirm)) return
-        try {
-            await deleteTicket(ticketId)
-            loadEventData()
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
+            showToast(err instanceof Error ? err.message : t.events.details.ticketCreateError, 'error')
         }
     }
 
     async function handleCheckIn(attendeeId: string) {
         try {
             await checkInAttendee(attendeeId)
+            showToast(t.events.details.checkInSuccess)
             loadEventData()
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : String(err))
+            showToast(err instanceof Error ? err.message : t.events.details.checkInError, 'error')
         }
     }
 
-    const copyPublicLink = () => {
-        navigator.clipboard.writeText(publicLink)
-        alert(t.events.details.copied)
+    const copyPublicLink = async () => {
+        try {
+            const link = publicLink || `${window.location.origin}/register/${params.id}`
+            await navigator.clipboard.writeText(link)
+            showToast(t.events.details.copied || 'Link copied to clipboard')
+        } catch (err) {
+            console.error('Failed to copy:', err)
+            showToast('Failed to copy link', 'error')
+        }
     }
 
     if (loading) {
         return (
             <div className="flex h-screen">
                 <Sidebar />
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center pb-24 md:pb-0">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-gray-400">{t.loading.eventModule}</p>
@@ -127,7 +151,7 @@ export default function EventDetailsPage() {
         return (
             <div className="flex h-screen">
                 <Sidebar />
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center pb-24 md:pb-0">
                     <div className="text-center">
                         <p className="text-red-400">{t.events.details.noEvent}</p>
                     </div>
@@ -139,7 +163,7 @@ export default function EventDetailsPage() {
     const totalTickets = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0)
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className={`flex min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 ${isRTL ? 'rtl font-arabic' : 'ltr'}`}>
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow" />
                 <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
@@ -147,44 +171,55 @@ export default function EventDetailsPage() {
 
             <Sidebar />
 
-            <div className="flex-1 relative z-10">
+            <div className="flex-1 relative z-10 w-full overflow-hidden">
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
-                    <div className="px-8 py-6">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <Link href="/events" className="text-sm text-primary-400 hover:text-primary-300 mb-2 inline-block">
-                                    {t.events.title}/ 
+                    <div className="px-4 md:px-8 py-4 md:py-6">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0 text-start">
+                                <Link href="/events" className="text-xs md:text-sm text-primary-400 hover:text-primary-300 mb-1 inline-block">
+                                    {t.events.title}/
                                 </Link>
-                                <div className="text-sm text-primary-400 hover:text-primary-300 mb-2 inline-block">
+                                <div className="text-xs md:text-sm text-primary-400 mb-1 inline-block ms-1">
                                     {t.events.details.title}
                                 </div>
-                                <h1 className="text-3xl font-bold text-white mb-2">{event.title}</h1>
-                                <p className="text-gray-400">{event.description}</p>
+                                <h1 className="text-xl md:text-3xl font-bold text-white mb-1 md:mb-2 truncate">{event.title}</h1>
+                                <p className="text-gray-400 text-sm md:text-base line-clamp-1">{event.description}</p>
                             </div>
-                            <div className="flex gap-3">
-                                <Button variant="outline" onClick={copyPublicLink}>
-                                    <svg className="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                    onClick={copyPublicLink}
+                                    title={t.events.details.registrationLink}
+                                    className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                                     </svg>
-                                    {t.events.details.registrationLink}
-                                </Button>
+                                </button>
                                 <Link href="/scanner">
-                                    <Button variant="outline">
-                                        <svg className="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <button
+                                        title={t.events.details.scanTickets}
+                                        className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
                                         </svg>
-                                        {t.events.details.scanTickets}
-                                    </Button>
+                                    </button>
                                 </Link>
-                                <Button variant="outline" onClick={handleDeleteEvent} className="text-red-400 border-red-400/30 hover:bg-red-400/10">
-                                    {t.events.details.delete}
-                                </Button>
+                                <button
+                                    onClick={() => setShowDeleteEventConfirm(true)}
+                                    title={t.events.details.delete}
+                                    className="p-2 md:px-3 md:py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 transition-all"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <main className="p-8 space-y-6">
+                <main className="p-4 md:p-8 pb-28 md:pb-8 space-y-5 md:space-y-6">
                     {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
                     <div className="mb-6">
@@ -192,7 +227,7 @@ export default function EventDetailsPage() {
                             tabs={[
                                 { id: 'overview', label: t.events.details.overview },
                                 { id: 'tickets', label: t.events.details.categories },
-                                { id: 'attendees', label: t.events.details.attendees },
+                                { id: 'attendees', label: t.events.details.attendeeList },
                             ]}
                             activeTab={activeTab}
                             onChange={setActiveTab}
@@ -219,7 +254,7 @@ export default function EventDetailsPage() {
                                     <p className="text-sm text-gray-500 mt-2">{tickets.length} categories</p>
                                 </div>
                             </div>
-                            
+
                             <div className="lg:col-span-2 space-y-6">
                                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
                                     <h2 className="text-xl font-bold text-white mb-4">{t.events.details.title}</h2>
@@ -230,7 +265,7 @@ export default function EventDetailsPage() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                 </svg>
                                             </div>
-                                            <div>
+                                            <div className="text-start">
                                                 <p className="text-gray-400 text-xs">{t.events.details.date}</p>
                                                 <p className="text-white font-medium">{formatDate(event.date)}</p>
                                             </div>
@@ -241,7 +276,7 @@ export default function EventDetailsPage() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <div>
+                                            <div className="text-start">
                                                 <p className="text-gray-400 text-xs">{t.events.details.time}</p>
                                                 <p className="text-white font-medium">{formatTime(event.time)}</p>
                                             </div>
@@ -253,7 +288,7 @@ export default function EventDetailsPage() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
                                             </div>
-                                            <div>
+                                            <div className="text-start">
                                                 <p className="text-gray-400 text-xs">{t.events.details.location}</p>
                                                 <p className="text-white font-medium">{event.location}</p>
                                             </div>
@@ -264,7 +299,7 @@ export default function EventDetailsPage() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <div>
+                                            <div className="text-start">
                                                 <p className="text-gray-400 text-xs">{t.events.details.status}</p>
                                                 <p className="text-white font-medium capitalize">{event.status}</p>
                                             </div>
@@ -287,7 +322,7 @@ export default function EventDetailsPage() {
                     )}
 
                     {activeTab === 'tickets' && (
-                        <div className="space-y-6">
+                        <div className="space-y-6 text-start">
                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
@@ -317,7 +352,7 @@ export default function EventDetailsPage() {
                                                     </div>
                                                 </div>
                                                 <button
-                                                    onClick={() => handleDeleteTicket(ticket.id)}
+                                                    onClick={() => setTicketToDelete(ticket.id)}
                                                     className="text-gray-500 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,12 +375,12 @@ export default function EventDetailsPage() {
                     )}
 
                     {activeTab === 'attendees' && (
-                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden text-start">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between">
                                 <h2 className="text-xl font-bold text-white">{t.events.details.attendeeList}</h2>
                                 <p className="text-sm text-gray-400">{attendees.length} {t.events.details.registered}</p>
                             </div>
-                            
+
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left rtl:text-right">
                                     <thead className="bg-white/5 text-gray-400 text-sm">
@@ -379,8 +414,8 @@ export default function EventDetailsPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {!attendee.checked_in && (
-                                                        <Button 
-                                                            variant="outline" 
+                                                        <Button
+                                                            variant="outline"
                                                             size="sm"
                                                             onClick={() => handleCheckIn(attendee.id)}
                                                         >
@@ -411,7 +446,7 @@ export default function EventDetailsPage() {
                 onClose={() => setShowTicketModal(false)}
                 title={t.events.details.addTicket}
             >
-                <form onSubmit={handleCreateTicket} className="space-y-4">
+                <form onSubmit={handleCreateTicket} className="space-y-4 text-start">
                     <Input
                         label={t.events.details.ticketName}
                         type="text"
@@ -448,6 +483,28 @@ export default function EventDetailsPage() {
                     </Button>
                 </form>
             </Modal>
+
+            {/* Event Deletion Confirm */}
+            <ConfirmDialog
+                isOpen={showDeleteEventConfirm}
+                onClose={() => setShowDeleteEventConfirm(false)}
+                onConfirm={handleConfirmDeleteEvent}
+                title={t.events.details.delete}
+                message={t.events.details.deleteConfirm}
+                variant="danger"
+                loading={isDeleting}
+            />
+
+            {/* Ticket Deletion Confirm */}
+            <ConfirmDialog
+                isOpen={!!ticketToDelete}
+                onClose={() => setTicketToDelete(null)}
+                onConfirm={handleConfirmDeleteTicket}
+                title={t.events.details.deleteTicketTitle || 'Delete Ticket Category'}
+                message={t.events.details.deleteTicketConfirm}
+                variant="danger"
+                loading={isDeleting}
+            />
         </div>
     )
 }

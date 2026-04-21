@@ -1,0 +1,57 @@
+-- -- SQL Script to create and populate the subscription_plans table.
+-- -- Please run this in the Supabase SQL Editor.
+
+-- CREATE TABLE IF NOT EXISTS public.subscription_plans (
+--     id TEXT PRIMARY KEY,
+--     name_en TEXT NOT NULL,
+--     name_ar TEXT NOT NULL,
+--     price NUMERIC NOT NULL,
+--     features_en JSONB NOT NULL,
+--     features_ar JSONB NOT NULL,
+--     tier TEXT NOT NULL UNIQUE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- );
+
+-- -- Enable Row Level Security (RLS)
+-- ALTER TABLE public.subscription_plans ENABLE ROW LEVEL SECURITY;
+
+-- -- Allow read access to all users (public and authenticated)
+-- CREATE POLICY "Allow public read access to subscription plans" 
+-- ON public.subscription_plans 
+-- FOR SELECT 
+-- USING (true);
+
+-- -- Restrict insert/update/delete to only be done via supabase dashboard or admin
+-- -- No policies needed for admin, as service_role bypasses RLS.
+
+-- -- Insert initial current plans
+-- INSERT INTO public.subscription_plans (id, name_en, name_ar, price, features_en, features_ar, tier)
+-- VALUES 
+-- (
+--   'free', 
+--   'Free Plan', 
+--   'الباقة المجانية',
+--   0, 
+--   '["Up to 5 events/month", "50 attendees per event", "Email support"]', 
+--   '["دعم البريد الإلكتروني", "50 مدعو لكل فعالية", "حتى 5 فعاليات شهرياً"]', 
+--   'free'
+-- ),
+-- (
+--   'premium', 
+--   'Premium Plan', 
+--   'الباقة المميزة',
+--   29, 
+--   '["Up to 20 events/month", "200 attendees per event", "Priority support"]', 
+--   '["دعم فني سريع", "200 حاضر لكل فعالية", "حتى 20 فعالية شهرياً"]', 
+--   'premium'
+-- ),
+-- (
+--   'professional', 
+--   'Professional Plan', 
+--   'الباقة الاحترافية',
+--   99, 
+--   '["Unlimited events/month", "1000 attendees per event"]', 
+--   '["1000 حاضر لكل فعالية", "فعاليات غير محدودة شهرياً"]', 
+--   'professional'
+-- );

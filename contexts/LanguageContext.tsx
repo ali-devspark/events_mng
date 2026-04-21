@@ -151,6 +151,8 @@ interface Translations {
         creating: string
         createSuccess: string
         createError: string
+        confirmCreateTitle: string
+        confirmCreateMessage: string
         description: string
         totalEvents: string
         upcomingEvents: string
@@ -209,6 +211,14 @@ interface Translations {
             deleteTicketConfirm: string
             copied: string
             free: string
+            deleteTicketTitle: string
+            deleteSuccess: string
+            deleteError: string
+            deleteTicketSuccess: string
+            deleteTicketError: string
+            ticketCreateError: string
+            checkInSuccess: string
+            checkInError: string
         }
     }
     // Scanner
@@ -251,6 +261,7 @@ interface Translations {
     settings: {
         title: string
         description: string
+        account: string
         profile: string
         security: string
         notifications: string
@@ -445,6 +456,8 @@ const translations: Record<Language, Translations> = {
             creating: 'Creating...',
             createSuccess: 'Event created successfully!',
             createError: 'Failed to create event',
+            confirmCreateTitle: 'Create New Event',
+            confirmCreateMessage: 'Are you sure you want to create this event and announce it?',
             description: 'Manage your events and tickets',
             totalEvents: "All Events",
             upcomingEvents: "Upcoming Events",
@@ -503,6 +516,14 @@ const translations: Record<Language, Translations> = {
                 deleteTicketConfirm: 'Delete this ticket?',
                 copied: 'Registration link copied to clipboard!',
                 free: 'Free',
+                deleteTicketTitle: 'Delete Ticket Category',
+                deleteSuccess: 'Event deleted successfully',
+                deleteError: 'Failed to delete event',
+                deleteTicketSuccess: 'Ticket category deleted successfully',
+                deleteTicketError: 'Failed to delete ticket category',
+                ticketCreateError: 'Failed to create ticket',
+                checkInSuccess: 'Checked in successfully',
+                checkInError: 'Check-in failed',
             }
         },
         scanner: {
@@ -542,6 +563,7 @@ const translations: Record<Language, Translations> = {
         settings: {
             title: 'Settings',
             description: 'Manage your account and preferences',
+            account: 'Account',
             profile: 'Profile',
             security: 'Security',
             notifications: 'Notifications',
@@ -575,17 +597,14 @@ const translations: Record<Language, Translations> = {
                     features: [
                         'Up to 20 events/month',
                         '200 attendees per event',
-                        'Priority support',
-                        'Custom branding'
+                        'Priority support'
                     ]
                 },
                 professional: {
                     name: 'Professional Plan',
                     features: [
                         'Unlimited events/month',
-                        '1000 attendees per event',
-                        '24/7 Phone support',
-                        'Advanced analytics'
+                        '1000 attendees per event'
                     ]
                 }
             }
@@ -750,6 +769,8 @@ const translations: Record<Language, Translations> = {
             creating: 'جارٍ الإنشاء...',
             createSuccess: 'تم إنشاء الفعالية بنجاح!',
             createError: 'فشل إنشاء الفعالية',
+            confirmCreateTitle: 'إنشاء فعالية جديدة',
+            confirmCreateMessage: 'هل أنت متأكد من رغبتك في إنشاء هذه الفعالية ونشرها؟',
             description: 'إدارة فعالياتك وتذاكرك',
             totalEvents: "كل الفعاليات",
             upcomingEvents: "الفعاليات القادمة",
@@ -808,6 +829,14 @@ const translations: Record<Language, Translations> = {
                 deleteTicketConfirm: 'حذف هذه التذكرة؟',
                 copied: 'تم نسخ رابط التسجيل للحافظة!',
                 free: 'مجاني',
+                deleteTicketTitle: 'حذف فئة التذاكر',
+                deleteSuccess: 'تم حذف الفعالية بنجاح',
+                deleteError: 'فشل حذف الفعالية',
+                deleteTicketSuccess: 'تم حذف فئة التذكرة بنجاح',
+                deleteTicketError: 'فشل حذف فئة التذكرة',
+                ticketCreateError: 'فشل إنشاء التذكرة',
+                checkInSuccess: 'تم التحضير بنجاح',
+                checkInError: 'فشل عملية التحضير',
             }
         },
         scanner: {
@@ -847,6 +876,7 @@ const translations: Record<Language, Translations> = {
         settings: {
             title: 'الإعدادات',
             description: 'إدارة حسابك وتفضيلاتك',
+            account: 'الحساب',
             profile: 'الملف الشخصي',
             security: 'الأمان',
             notifications: 'الإشعارات',

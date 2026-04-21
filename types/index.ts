@@ -23,9 +23,23 @@ export interface Profile {
     id: string
     full_name: string | null
     avatar_url: string | null
-    subscription_tier: SubscriptionTier
-    max_events_per_month: number
-    max_attendees_per_event: number
+    created_at: string
+    updated_at: string
+}
+
+export type SubscriptionStatus = 'active' | 'disabled' | 'pending' | 'cancelled'
+
+export interface UserSubscription {
+    id: string
+    user_id: string
+    tier: SubscriptionTier
+    status: SubscriptionStatus
+    receipt_url: string | null
+    start_date: string
+    end_date: string | null
+    events_limit: number
+    events_used: number
+    attendees_limit: number
     created_at: string
     updated_at: string
 }
@@ -102,4 +116,16 @@ export interface CalendarEvent {
     time: string
     location: string
     status: Event['status']
+}
+
+export interface SubscriptionPlan {
+    id: string
+    name_en: string
+    name_ar: string
+    price: number
+    features_en: string[]
+    features_ar: string[]
+    tier: SubscriptionTier
+    created_at?: string
+    updated_at?: string
 }

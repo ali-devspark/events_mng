@@ -53,28 +53,28 @@ export default function EventsPage() {
 
             <div className="flex-1 relative z-10">
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
-                    <div className="px-8 py-6">
-                        <div className="flex items-center justify-between">
+                    <div className="px-4 md:px-8 py-4 md:py-6">
+                        <div className="flex items-center justify-between gap-3">
                             <div>
-                                <h1 className="text-3xl font-bold text-white mb-2">{t.events.title}</h1>
-                                <p className="text-gray-400">{t.events.description}</p>
+                                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">{t.events.title}</h1>
+                                <p className="text-gray-400 text-sm md:text-base">{t.events.description}</p>
                             </div>
-                            <Link href="/events/create">
+                            <Link href="/events/create" className="flex-shrink-0">
                                 <Button variant="primary">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    {/* Create Event */}
-                                    {t.events.create}
+                                    <span className="hidden sm:inline">{t.events.create}</span>
+                                    <span className="sm:hidden">+</span>
                                 </Button>
                             </Link>
                         </div>
                     </div>
                 </header>
 
-                <main className="p-8 space-y-6">
+                <main className="p-4 md:p-8 pb-28 md:pb-8 space-y-5 md:space-y-6">
                     {/* Filters */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3 overflow-x-auto pb-1 scrollbar-hide">
                         <button
                             onClick={() => setFilter('all')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'all'

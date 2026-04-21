@@ -76,26 +76,26 @@ export default function CalendarPage() {
 
             <div className="flex-1 relative z-10 flex flex-col h-screen overflow-hidden">
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20 flex-shrink-0">
-                    <div className="px-8 py-6 flex items-center justify-between">
+                    <div className="px-4 md:px-8 py-3 md:py-6 flex items-center justify-between gap-3">
                         <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">{t.calendar.title}</h1>
-                            <p className="text-gray-400">{t.calendar.description}</p>
+                            <h1 className="text-xl md:text-3xl font-bold text-white mb-0.5 md:mb-2">{t.calendar.title}</h1>
+                            <p className="text-gray-400 text-xs md:text-base hidden sm:block">{t.calendar.description}</p>
                         </div>
-                        <div className="flex items-center gap-4 bg-white/5 p-1 rounded-xl border border-white/10">
+                        <div className="flex items-center gap-1 md:gap-4 bg-white/5 p-1 rounded-xl border border-white/10">
                             <button
                                 onClick={previousMonth}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
+                                className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
                             >
                                 <svg className={`w-6 h-6 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
-                            <h2 className="text-xl font-semibold text-white min-w-[180px] text-center">
+                            <h2 className="text-sm md:text-xl font-semibold text-white min-w-[100px] md:min-w-[180px] text-center">
                                 {t.calendar.months[month - 1]} {year}
                             </h2>
                             <button
                                 onClick={nextMonth}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
+                                className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
                             >
                                 <svg className={`w-6 h-6 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -105,7 +105,7 @@ export default function CalendarPage() {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-8">
+                <main className="flex-1 overflow-y-auto p-2 md:p-8 pb-24 md:pb-8">
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
                             {/* Day Headers */}
@@ -134,30 +134,32 @@ export default function CalendarPage() {
                                                 key={index}
                                                 onClick={() => handleDayClick(date)}
                                                 className={`
-                                                    min-h-[120px] p-3 rounded-2xl border transition-all duration-200 text-left flex flex-col items-start
+                                                    min-h-[60px] md:min-h-[100px] p-1.5 md:p-3 rounded-xl md:rounded-2xl border transition-all duration-200 text-start flex flex-col items-start
                                                     ${inCurrentMonth
                                                         ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary-500/50'
                                                         : 'bg-white/[0.02] border-white/5 text-gray-600 opacity-20'
                                                     }
-                                                    ${isToday ? 'ring-2 ring-primary-500 ring-offset-4 ring-offset-gray-900 bg-primary-500/5' : ''}
+                                                    ${isToday ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-gray-900 bg-primary-500/5' : ''}
                                                 `}
                                             >
-                                                <span className={`text-sm font-bold mb-2 ${inCurrentMonth ? (isToday ? 'text-primary-400' : 'text-white') : 'text-gray-600'}`}>
+                                                <span className={`text-[10px] md:text-sm font-bold mb-1 md:mb-2 ${inCurrentMonth ? (isToday ? 'text-primary-400' : 'text-white') : 'text-gray-600'}`}>
                                                     {date.getDate()}
                                                 </span>
                                                 {dayEvents.length > 0 && (
-                                                    <div className="w-full space-y-1">
-                                                        {dayEvents.slice(0, 2).map((event, i) => (
+                                                    <div className="w-full space-y-0.5">
+                                                        {dayEvents.slice(0, 1).map((event, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="text-[10px] w-full px-2 py-1 rounded bg-primary-500/20 text-primary-300 border border-primary-500/20 truncate"
+                                                                className="text-[8px] md:text-[10px] w-full px-1 md:px-2 py-0.5 md:py-1 rounded bg-primary-500/20 text-primary-300 border border-primary-500/20 truncate hidden sm:block"
                                                             >
                                                                 {event.title}
                                                             </div>
                                                         ))}
-                                                        {dayEvents.length > 2 && (
-                                                            <div className="text-[10px] text-gray-500 px-2 italic">
-                                                                + {dayEvents.length - 2} {t.calendar.more}
+                                                        {/* Mobile: just dot indicator */}
+                                                        <div className="sm:hidden w-1.5 h-1.5 rounded-full bg-primary-400 mx-auto" />
+                                                        {dayEvents.length > 1 && (
+                                                            <div className="text-[8px] md:text-[10px] text-gray-500 px-1 md:px-2 italic hidden sm:block">
+                                                                + {dayEvents.length - 1} {t.calendar.more}
                                                             </div>
                                                         )}
                                                     </div>

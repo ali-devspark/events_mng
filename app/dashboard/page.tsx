@@ -38,7 +38,7 @@ export default function DashboardPage() {
         return (
             <div className="flex h-screen">
                 <Sidebar />
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center pb-24 md:pb-0">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-gray-400">{t.loading.dashboardModule}</p>
@@ -61,16 +61,16 @@ export default function DashboardPage() {
             <div className="flex-1 relative z-10">
                 {/* Header */}
                 <header className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
-                    <div className="px-8 py-6">
-                        <h1 className="text-3xl font-bold text-white mb-2">{t.dashboard.title}</h1>
-                        <p className="text-gray-400">{t.dashboard.welcome}</p>
+                    <div className="px-4 md:px-8 py-4 md:py-6">
+                        <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">{t.dashboard.title}</h1>
+                        <p className="text-gray-400 text-sm md:text-base">{t.dashboard.welcome}</p>
                     </div>
                 </header>
 
                 {/* Main Content */}
-                <main className="p-8 space-y-8">
+                <main className="p-4 md:p-8 pb-28 md:pb-8 space-y-6 md:space-y-8">
                     {/* Statistics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                         <StatCard
                             title={t.dashboard.totalEvents}
                             value={stats?.total_events || 0}
@@ -114,9 +114,9 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
-                        <h2 className="text-xl font-bold text-white mb-4">{t.dashboard.quickActions}</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 md:p-6">
+                        <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4">{t.dashboard.quickActions}</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                             <Link href="/events/create">
                                 <Button variant="primary" fullWidth>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

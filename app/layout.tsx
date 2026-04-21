@@ -3,6 +3,7 @@ import { Inter, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import SubscriptionBanner from "@/components/layout/SubscriptionBanner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const cairo = Cairo({ subsets: ["arabic"], variable: "--font-cairo" });
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
     title: "Nazemny - نظمني | منصة إدارة الفعاليات",
     description: "منصة متكاملة لإدارة الفعاليات | Comprehensive event management platform",
 };
+
+import { ToastProvider } from "@/contexts/ToastContext";
 
 export default function RootLayout({
     children,
@@ -22,7 +25,10 @@ export default function RootLayout({
             <body className={`${inter.variable} ${cairo.variable} font-sans`}>
                 <AuthProvider>
                     <LanguageProvider>
-                        {children}
+                        <ToastProvider>
+                            <SubscriptionBanner />
+                            {children}
+                        </ToastProvider>
                     </LanguageProvider>
                 </AuthProvider>
             </body>

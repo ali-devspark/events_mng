@@ -1,84 +1,91 @@
 'use client'
 
-import { useState } from 'react'
-import Tabs from '@/components/ui/Tabs'
+import { useState, useEffect } from 'react'
 import Input from '@/components/ui/Input'
 import Alert from '@/components/ui/Alert'
+import Button from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { getProfile, updateProfile } from '@/lib/api/profiles'
 
 export default function ProfileSettingsPage() {
     const { user } = useAuth()
+    const { t, language } = useLanguage()
+    
+    const [name, setName] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [updating, setUpdating] = useState(false)
     const [success, setSuccess] = useState('')
     const [error, setError] = useState('')
 
-    const tabs = [
-        {
-            id: 'profile',
-            label: 'Profile',
-            href: '/settings/profile',
-            icon: (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-            ),
-        },
-        {
-            id: 'password',
-            label: 'Password',
-            href: '/settings/password',
-            icon: (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-            ),
-        },
-        {
-            id: 'plan',
-            label: 'Plan',
-            href: '/settings/plan',
-            icon: (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-        },
-    ]
+    useEffect(() => {
+        async function loadProfile() {
+            try {
+                const data = await getProfile()
+                if (data) setName(data.full_name || '')
+            } catch (err) {
+                console.error('Error loading profile:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        loadProfile()
+    }, [])
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setUpdating(true)
+        setError('')
+        setSuccess('')
+        try {
+            await updateProfile({ full_name: name })
+            setSuccess(language === 'ar' ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated successfully')
+        } catch (err) {
+            console.error('Update profile error:', err)
+            setError(language === 'ar' ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile')
+        } finally {
+            setUpdating(false)
+        }
+    }
 
     return (
-        <div className="space-y-6">
-            <Tabs tabs={tabs} activeTab="profile" />
+        <>
+            {success && <Alert type="success" message={success} onClose={() => setSuccess('')} />}
+            {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8">
-                {success && <Alert type="success" message={success} onClose={() => setSuccess('')} />}
-                {error && <Alert type="error" message={error} onClose={() => setError('')} />}
+            <form onSubmit={handleUpdateProfile} className="space-y-5 mt-4 md:mt-6 max-w-md">
+                <Input
+                    label={t.settings.fullName}
+                    type="text"
+                    value={loading ? '...' : name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t.registration.fullNamePlaceholder}
+                    disabled={loading}
+                />
 
-                <form className="space-y-6 mt-6">
-                    <Input
-                        label="Email"
-                        type="email"
-                        value={user?.email || ''}
-                        disabled
-                        helperText="Email cannot be changed"
-                    />
+                <Input
+                    label={language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    helperText={language === 'ar' ? 'لا يمكن تغيير البريد الإلكتروني' : 'Email cannot be changed'}
+                />
 
-                    <Input
-                        label="Phone Number"
-                        type="tel"
-                        value={user?.phone || ''}
-                        disabled
-                        helperText="Phone number cannot be changed"
-                    />
-
-                    <div className="pt-4">
-                        <p className="text-sm text-gray-400 mb-4">
-                            Account created: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                <div className="pt-4 flex flex-col gap-5">
+                    <Button type="submit" variant="primary" loading={updating}>
+                        {t.common.save}
+                    </Button>
+                    
+                    <div className="pt-4 border-t border-white/10">
+                        <p className="text-sm text-gray-400 mb-2">
+                            {language === 'ar' ? 'تاريخ الانضمام:' : 'Account created:'} {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                         </p>
-                        <p className="text-sm text-gray-400">
-                            User ID: <span className="font-mono text-xs">{user?.id}</span>
+                        <p className="text-sm text-gray-400 break-all">
+                            {language === 'ar' ? 'معرف المستخدم:' : 'User ID:'} <span className="font-mono text-xs text-gray-500">{user?.id}</span>
                         </p>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </>
     )
 }

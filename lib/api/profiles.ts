@@ -4,7 +4,8 @@ import { Profile, SubscriptionTier } from '@/types'
 const supabase = createClient()
 
 export async function getProfile() {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) return null
 
     const { data, error } = await supabase
@@ -18,7 +19,8 @@ export async function getProfile() {
 }
 
 export async function updateProfile(updates: Partial<Profile>) {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) throw new Error('Not authenticated')
 
     const { data, error } = await supabase
@@ -33,7 +35,8 @@ export async function updateProfile(updates: Partial<Profile>) {
 }
 
 export async function upgradeSubscription(tier: SubscriptionTier) {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) throw new Error('Not authenticated')
 
     // Define limits for each tier
