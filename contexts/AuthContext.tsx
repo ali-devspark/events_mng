@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email,
             password,
             options: {
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email`,
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
             },
         })
         return { error }
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const resetPassword = async (email: string) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
         })
         return { error }
     }
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             type: 'signup',
             email: user.email,
             options: {
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email`,
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
             },
         })
         return { error }

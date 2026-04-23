@@ -129,7 +129,6 @@ CREATE TABLE IF NOT EXISTS events (
   time TIME NOT NULL,
   location TEXT NOT NULL,
   max_attendees INTEGER NOT NULL CHECK (max_attendees > 0),
-  required_attendees INTEGER DEFAULT 0 CHECK (required_attendees >= 0),
   barcode TEXT UNIQUE NOT NULL,
   status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'ongoing', 'finished', 'cancelled')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -197,14 +196,14 @@ CREATE POLICY "Users can delete their own events" ON events FOR DELETE USING (au
 
 -- Tickets Policies
 CREATE POLICY "Users can view tickets for their events" ON tickets FOR SELECT USING (EXISTS (SELECT 1 FROM events WHERE events.id = tickets.event_id AND events.user_id = auth.uid()));
-CREATE POLICY "Public can view tickets" ON tickets FOR SELECT USING (true);
+-- CREATE POLICY "Public can view tickets" ON tickets FOR SELECT USING (true);
 CREATE POLICY "Users can create tickets for their events" ON tickets FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM events WHERE events.id = tickets.event_id AND events.user_id = auth.uid()));
 CREATE POLICY "Users can update tickets for their events" ON tickets FOR UPDATE USING (EXISTS (SELECT 1 FROM events WHERE events.id = tickets.event_id AND events.user_id = auth.uid()));
 CREATE POLICY "Users can delete tickets for their events" ON tickets FOR DELETE USING (EXISTS (SELECT 1 FROM events WHERE events.id = tickets.event_id AND events.user_id = auth.uid()));
 
 -- Attendees Policies
 CREATE POLICY "Users can view attendees for their events" ON attendees FOR SELECT USING (EXISTS (SELECT 1 FROM events WHERE events.id = attendees.event_id AND events.user_id = auth.uid()));
-CREATE POLICY "Public can view attendees" ON attendees FOR SELECT USING (true);
+-- CREATE POLICY "Public can view attendees" ON attendees FOR SELECT USING (true);
 CREATE POLICY "Users can create attendees for their events" ON attendees FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM events WHERE events.id = attendees.event_id AND events.user_id = auth.uid()));
 CREATE POLICY "Anyone can register for an event" ON attendees FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can update attendees for their events" ON attendees FOR UPDATE USING (EXISTS (SELECT 1 FROM events WHERE events.id = attendees.event_id AND events.user_id = auth.uid()));

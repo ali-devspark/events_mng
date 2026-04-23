@@ -9,7 +9,6 @@ export interface Event {
     time: string
     location: string
     max_attendees: number
-    required_attendees: number
     barcode: string
     status: 'upcoming' | 'ongoing' | 'finished' | 'cancelled'
     is_public?: boolean
@@ -85,7 +84,6 @@ export interface CreateEventInput {
     time: string
     location: string
     max_attendees: number
-    required_attendees?: number
 }
 
 export interface CreateTicketInput {

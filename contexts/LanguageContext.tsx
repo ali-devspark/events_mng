@@ -113,6 +113,27 @@ interface Translations {
             passwordsMismatch: string
             passwordMinLength: string
         }
+        verifyEmail: {
+            title: string
+            subtitle: string
+            sendingTo: string
+            nextSteps: string
+            step1: string
+            step2: string
+            step3: string
+            resendBtn: string
+            backToDashboard: string
+            noEmail: string
+            successTitle: string
+            successSubtitle: string
+            alreadyVerifiedTitle: string
+            alreadyVerifiedSubtitle: string
+            expiredTitle: string
+            expiredSubtitle: string
+            errorTitle: string
+            errorSubtitle: string
+            tryLogin: string
+        }
     }
     // Dashboard
     dashboard: {
@@ -144,8 +165,6 @@ interface Translations {
         eventLocationPlaceholder: string
         maxAttendeesLabel: string
         maxAttendeesHelper: string
-        requiredAttendeesLabel: string
-        requiredAttendeesHelper: string
         createButton: string
         cancelButton: string
         creating: string
@@ -180,7 +199,6 @@ interface Translations {
             location: string
             status: string
             maxAttendees: string
-            requiredAttendees: string
             noTickets: string
             eventQRCode: string
             addTicket: string
@@ -419,6 +437,27 @@ const translations: Record<Language, Translations> = {
                 goToLogin: 'Go to Login',
                 passwordsMismatch: 'Passwords do not match',
                 passwordMinLength: 'Password must be at least 8 characters'
+            },
+            verifyEmail: {
+                title: 'Verify Your Email',
+                subtitle: 'Check your inbox for verification link',
+                sendingTo: "We've sent a verification link to:",
+                nextSteps: 'Next steps:',
+                step1: 'Check your email inbox',
+                step2: 'Click the verification link',
+                step3: 'Return here to access your account',
+                resendBtn: 'Resend Verification Email',
+                backToDashboard: 'Go to Dashboard',
+                noEmail: "Didn't receive the email? Check your spam folder or try resending.",
+                successTitle: 'Email Verified!',
+                successSubtitle: 'Your account has been successfully activated.',
+                alreadyVerifiedTitle: 'Account Already Active',
+                alreadyVerifiedSubtitle: 'Your email has already been verified. You can proceed to the dashboard.',
+                expiredTitle: 'Link Expired',
+                expiredSubtitle: 'This verification link has expired or has already been used.',
+                errorTitle: 'Verification Error',
+                errorSubtitle: 'Something went wrong while verifying your email.',
+                tryLogin: 'Try Logging In',
             }
         },
         dashboard: {
@@ -449,8 +488,6 @@ const translations: Record<Language, Translations> = {
             eventLocationPlaceholder: 'e.g., Convention Center, Room 101',
             maxAttendeesLabel: 'Maximum Attendees',
             maxAttendeesHelper: 'Total capacity for this event',
-            requiredAttendeesLabel: 'Required Attendees',
-            requiredAttendeesHelper: 'Minimum attendees needed',
             createButton: 'Create Event',
             cancelButton: 'Cancel',
             creating: 'Creating...',
@@ -485,7 +522,6 @@ const translations: Record<Language, Translations> = {
                 location: 'Location',
                 status: 'Status',
                 maxAttendees: 'Max Attendees',
-                requiredAttendees: 'Required Attendees',
                 noTickets: 'No Tickets Created Yet',
                 eventQRCode: 'Event QR Code',
                 addTicket: 'Add Ticket',
@@ -732,6 +768,27 @@ const translations: Record<Language, Translations> = {
                 goToLogin: 'الذهاب لتسجيل الدخول',
                 passwordsMismatch: 'كلمات المرور غير متوافقة',
                 passwordMinLength: 'يجب أن تكون كلمة المرور 8 أحرف على الأقل'
+            },
+            verifyEmail: {
+                title: 'تأكيد البريد الإلكتروني',
+                subtitle: 'يرجى التحقق من صندوق الوارد الخاص بك لرابط التأكيد',
+                sendingTo: 'لقد أرسلنا رابط التأكيد إلى:',
+                nextSteps: 'الخطوات التالية:',
+                step1: 'افتح صندوق الوارد في بريدك الإلكتروني',
+                step2: 'اضغط على رابط التأكيد الموجود في الرسالة',
+                step3: 'عد إلى هنا للوصول إلى حسابك',
+                resendBtn: 'إعادة إرسال بريد التأكيد',
+                backToDashboard: 'الذهاب إلى لوحة التحكم',
+                noEmail: 'لم تصلك الرسالة؟ تحقق من مجلد الرسائل غير المرغوب فيها أو حاول إعادة الإرسال.',
+                successTitle: 'تم تأكيد البريد!',
+                successSubtitle: 'لقد تم تفعيل حسابك بنجاح.',
+                alreadyVerifiedTitle: 'الحساب نشط بالفعل',
+                alreadyVerifiedSubtitle: 'تم تأكيد بريدك الإلكتروني مسبقاً. يمكنك المتابعة إلى لوحة التحكم.',
+                expiredTitle: 'انتهت صلاحية الرابط',
+                expiredSubtitle: 'رابط التأكيد هذا انتهت صلاحيته أو تم استخدامه بالفعل.',
+                errorTitle: 'خطأ في التأكيد',
+                errorSubtitle: 'حدث خطأ ما أثناء محاولة تأكيد بريدك الإلكتروني.',
+                tryLogin: 'حاول تسجيل الدخول',
             }
         },
         dashboard: {
@@ -762,8 +819,6 @@ const translations: Record<Language, Translations> = {
             eventLocationPlaceholder: 'مثلاً: قاعة المؤتمرات، الدور الثاني',
             maxAttendeesLabel: 'أقصى عدد للحضور',
             maxAttendeesHelper: 'إجمالي السعة الاستيعابية للفعالية',
-            requiredAttendeesLabel: 'العدد المطلوب للحضور',
-            requiredAttendeesHelper: 'الحد الأدنى من الحضور المطلوب',
             createButton: 'إنشاء الفعالية',
             cancelButton: 'إلغاء',
             creating: 'جارٍ الإنشاء...',
@@ -798,7 +853,6 @@ const translations: Record<Language, Translations> = {
                 location: 'الموقع',
                 status: 'الحالة',
                 maxAttendees: 'أقصى عدد حضور',
-                requiredAttendees: 'عدد الحضور المطلوب',
                 noTickets: 'لا توجد تذاكر بعد',
                 eventQRCode: 'رمز QR الخاص بالفعالية',
                 addTicket: 'إضافة تذكرة',

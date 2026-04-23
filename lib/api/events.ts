@@ -8,9 +8,14 @@ const supabase = createClient()
 // =====================================================
 
 export async function getEvents() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
     const { data, error } = await supabase
         .from('events')
         .select('*')
+        .eq('user_id', user.id)
         .order('date', { ascending: true })
 
     if (error) throw error
@@ -18,10 +23,15 @@ export async function getEvents() {
 }
 
 export async function getTodayEvents() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
     const today = new Date().toISOString().split('T')[0]
     const { data, error } = await supabase
         .from('events')
         .select('*')
+        .eq('user_id', user.id)
         .eq('date', today)
         .order('time', { ascending: true })
 
@@ -54,7 +64,6 @@ export async function createEvent(input: CreateEventInput) {
             ...input,
             user_id: user.id,
             barcode,
-            required_attendees: input.required_attendees || 0,
         })
         .select()
         .single()
@@ -85,9 +94,14 @@ export async function deleteEvent(id: string) {
 }
 
 export async function getEventsByDate(date: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
     const { data, error } = await supabase
         .from('events')
         .select('id, title, date, time, status')
+        .eq('user_id', user.id)
         .eq('date', date)
         .order('time', { ascending: true })
 
@@ -96,14 +110,18 @@ export async function getEventsByDate(date: string) {
 }
 
 export async function getEventsByMonth(year: number, month: number) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-    // Calculate the actual last day of the month (handles 28/29/30/31 correctly)
     const lastDay = new Date(year, month, 0).getDate()
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
     const { data, error } = await supabase
         .from('events')
         .select('id, title, date, time, status')
+        .eq('user_id', user.id)
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: true })
@@ -117,6 +135,21 @@ export async function getEventsByMonth(year: number, month: number) {
 // =====================================================
 
 export async function getTicketsByEventId(eventId: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
+    // Verify ownership of the event first
+    const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('user_id')
+        .eq('id', eventId)
+        .single()
+
+    if (eventError || event?.user_id !== user.id) {
+        throw new Error('Not authorized to view tickets for this event')
+    }
+
     const { data, error } = await supabase
         .from('tickets')
         .select('*')
@@ -164,6 +197,21 @@ export async function deleteTicket(id: string) {
 // =====================================================
 
 export async function getAttendeesByEventId(eventId: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
+    if (!user) throw new Error('Not authenticated')
+
+    // Verify ownership of the event first
+    const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('user_id')
+        .eq('id', eventId)
+        .single()
+
+    if (eventError || event?.user_id !== user.id) {
+        throw new Error('Not authorized to view attendees for this event')
+    }
+
     const { data, error } = await supabase
         .from('attendees')
         .select('*')

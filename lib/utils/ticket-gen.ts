@@ -85,6 +85,14 @@ export async function generateTicketImage(data: TicketData): Promise<string> {
             qrImage.src = qrUrl
         })
         ctx.drawImage(qrImage, 350, 50, 200, 200)
+
+        // Draw barcode text below QR
+        ctx.fillStyle = '#9ca3af' // gray-400
+        ctx.font = '12px Courier New, monospace'
+        ctx.textAlign = 'center'
+        const shortBarcode = data.barcode.length > 20 ? data.barcode.split(':').pop() || data.barcode : data.barcode
+        ctx.fillText(shortBarcode, 450, 275)
+        ctx.textAlign = 'start' // Reset for other draws if any
     }
 
     // Return the image data URL
