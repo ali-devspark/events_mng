@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AuthLayout from '@/components/auth/AuthLayout'
@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 type VerificationStatus = 'initial' | 'success' | 'already-verified' | 'expired' | 'error'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { user, resendVerificationEmail, loading: authLoading } = useAuth()
@@ -226,5 +226,17 @@ export default function VerifyEmailPage() {
                 )}
             </div>
         </AuthLayout>
+    )
+}
+
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+            </div>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
     )
 }

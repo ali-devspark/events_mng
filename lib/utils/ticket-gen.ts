@@ -80,8 +80,9 @@ export async function generateTicketImage(data: TicketData): Promise<string> {
     const qrUrl = await generateQRCode(data.barcode)
     if (qrUrl) {
         const qrImage = new Image()
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
             qrImage.onload = resolve
+            qrImage.onerror = () => reject(new Error('QR Load Failed'))
             qrImage.src = qrUrl
         })
         ctx.drawImage(qrImage, 350, 50, 200, 200)
