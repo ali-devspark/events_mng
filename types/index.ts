@@ -11,7 +11,9 @@ export interface Event {
     max_attendees: number
     barcode: string
     status: 'upcoming' | 'ongoing' | 'finished' | 'cancelled'
-    is_public?: boolean
+    category: string
+    type: 'public' | 'private'
+    is_online_registration_enabled: boolean
     created_at: string
     updated_at: string
 }
@@ -84,6 +86,10 @@ export interface CreateEventInput {
     time: string
     location: string
     max_attendees: number
+    category: string
+    type: 'public' | 'private'
+    is_online_registration_enabled: boolean
+    ticket_price?: number
 }
 
 export interface CreateTicketInput {

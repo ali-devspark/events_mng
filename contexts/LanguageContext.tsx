@@ -163,6 +163,18 @@ interface Translations {
         eventTime: string
         eventLocation: string
         eventLocationPlaceholder: string
+        eventCategory: string
+        eventType: string
+        typePublic: string
+        typePrivate: string
+        onlineRegistration: string
+        ticketPrice: string
+        categoryGraduation: string
+        categoryWedding: string
+        categoryEngagement: string
+        categoryConference: string
+        categoryOther: string
+        categoryOtherPlaceholder: string
         maxAttendeesLabel: string
         maxAttendeesHelper: string
         createButton: string
@@ -237,6 +249,8 @@ interface Translations {
             ticketCreateError: string
             checkInSuccess: string
             checkInError: string
+            createTicketsFirst: string
+            ticketSoldOut: string
         }
     }
     // Scanner
@@ -257,6 +271,8 @@ interface Translations {
         eventNotFoundDesc: string
         goHome: string
         title: string
+        privateRegistrationDisabled: string
+        noTicketsAvailable: string
         fullName: string
         fullNamePlaceholder: string
         email: string
@@ -486,6 +502,18 @@ const translations: Record<Language, Translations> = {
             eventTime: 'Time',
             eventLocation: 'Location',
             eventLocationPlaceholder: 'e.g., Convention Center, Room 101',
+            eventCategory: 'Category',
+            eventType: 'Event Type',
+            typePublic: 'Public',
+            typePrivate: 'Private',
+            onlineRegistration: 'Online Registration',
+            ticketPrice: 'Ticket Price',
+            categoryGraduation: 'Graduation',
+            categoryWedding: 'Wedding',
+            categoryEngagement: 'Engagement',
+            categoryConference: 'Event/Conference',
+            categoryOther: 'Other',
+            categoryOtherPlaceholder: 'Specify category',
             maxAttendeesLabel: 'Maximum Attendees',
             maxAttendeesHelper: 'Total capacity for this event',
             createButton: 'Create Event',
@@ -560,6 +588,8 @@ const translations: Record<Language, Translations> = {
                 ticketCreateError: 'Failed to create ticket',
                 checkInSuccess: 'Checked in successfully',
                 checkInError: 'Check-in failed',
+                createTicketsFirst: 'You must create tickets first',
+                ticketSoldOut: 'This ticket has sold out',
             }
         },
         scanner: {
@@ -577,6 +607,8 @@ const translations: Record<Language, Translations> = {
             eventNotFound: 'Sorry, Event Not Found',
             eventNotFoundDesc: 'The link might be invalid or registration period has ended.',
             goHome: 'Go Home',
+            privateRegistrationDisabled: 'This is a private event and no online registration is available.',
+            noTicketsAvailable: 'No tickets available for this event.',
             title: 'Event Registration',
             fullName: 'Full Name',
             fullNamePlaceholder: 'Enter your full name',
@@ -817,6 +849,18 @@ const translations: Record<Language, Translations> = {
             eventTime: 'الوقت',
             eventLocation: 'الموقع',
             eventLocationPlaceholder: 'مثلاً: قاعة المؤتمرات، الدور الثاني',
+            eventCategory: 'تصنيف الحدث',
+            eventType: 'نوع الحدث',
+            typePublic: 'عام',
+            typePrivate: 'خاص',
+            onlineRegistration: 'التسجيل أون لاين',
+            ticketPrice: 'سعر التذكرة',
+            categoryGraduation: 'حفل تخرج',
+            categoryWedding: 'زواج',
+            categoryEngagement: 'خطوبة',
+            categoryConference: 'حدث/مؤتمر',
+            categoryOther: 'أخرى',
+            categoryOtherPlaceholder: 'حدد التصنيف',
             maxAttendeesLabel: 'أقصى عدد للحضور',
             maxAttendeesHelper: 'إجمالي السعة الاستيعابية للفعالية',
             createButton: 'إنشاء الفعالية',
@@ -891,6 +935,8 @@ const translations: Record<Language, Translations> = {
                 ticketCreateError: 'فشل إنشاء التذكرة',
                 checkInSuccess: 'تم التحضير بنجاح',
                 checkInError: 'فشل عملية التحضير',
+                createTicketsFirst: 'يجب انشاء التذاكر أولا',
+                ticketSoldOut: 'هذه التذكرة انتهت',
             }
         },
         scanner: {
@@ -908,6 +954,8 @@ const translations: Record<Language, Translations> = {
             eventNotFound: 'عذراً، الحدث غير موجود',
             eventNotFoundDesc: 'يبدو أن الرابط غير صحيح أو أن التسجيل قد انتهى.',
             goHome: 'العودة للرئيسية',
+            privateRegistrationDisabled: 'هذه فعالية خاصة ولا يوجد تسجيل أون لاين لهذه الفعالية.',
+            noTicketsAvailable: 'لا توجد تذاكر متاحة لهذه الفعالية.',
             title: 'التسجيل في الحدث',
             fullName: 'الاسم الكامل',
             fullNamePlaceholder: 'أدخل اسمك الكامل',

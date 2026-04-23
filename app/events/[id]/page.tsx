@@ -123,6 +123,15 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
     }
 
     const copyPublicLink = async () => {
+        if (event?.type === 'private' && !event.is_online_registration_enabled) {
+            showToast(t.registration.privateRegistrationDisabled || 'This is a private event and no online registration is available.', 'error');
+            return;
+        }
+        if (event?.type === 'private' && tickets.length === 0) {
+            showToast(t.events.details.createTicketsFirst || 'You must create tickets first', 'error');
+            return;
+        }
+
         try {
             const link = publicLink || `${window.location.origin}/register/${params.id}`
             await navigator.clipboard.writeText(link)
@@ -189,7 +198,8 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 <button
                                     onClick={copyPublicLink}
                                     title={t.events.details.registrationLink}
-                                    className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
+                                    disabled={event?.type === 'private' && !event?.is_online_registration_enabled}
+                                    className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all ${event?.type === 'private' && !event?.is_online_registration_enabled ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'}`}
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -341,9 +351,11 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                             {totalTickets} / {event.max_attendees} {t.events.details.totalSeats}
                                         </p>
                                     </div>
-                                    <Button variant="primary" onClick={() => setShowTicketModal(true)}>
-                                        {t.events.details.createTicket}
-                                    </Button>
+                                    {event?.type !== 'public' && (
+                                        <Button variant="primary" onClick={() => setShowTicketModal(true)}>
+                                            {t.events.details.createTicket}
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {tickets.length > 0 ? (
@@ -375,9 +387,11 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 ) : (
                                     <div className="text-center py-20 bg-white/[0.02] rounded-xl border border-dashed border-white/10">
                                         <p className="text-gray-400">{t.events.details.noTickets}</p>
-                                        <Button variant="outline" onClick={() => setShowTicketModal(true)} className="mt-4">
-                                            {t.events.details.createTicket}
-                                        </Button>
+                                        {event?.type !== 'public' && (
+                                            <Button variant="outline" onClick={() => setShowTicketModal(true)} className="mt-4">
+                                                {t.events.details.createTicket}
+                                            </Button>
+                                        )}
                                     </div>
                                 )}
                             </div>

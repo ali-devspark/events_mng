@@ -3,7 +3,8 @@
 import { useEffect, useState, use, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { getEventById, createPublicAttendee } from '@/lib/api/events'
-import { Event } from '@/types'
+import { createClient } from '@/lib/supabase/client'
+import { Event, Ticket } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -39,6 +40,15 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
     const [error, setError] = useState<string | null>(null)
     const [ticketUrl, setTicketUrl] = useState<string | null>(null)
     const [isSoldOut, setIsSoldOut] = useState(false)
+    const [tickets, setTickets] = useState<Ticket[]>([])
+    const [selectedTicket, setSelectedTicket] = useState<string>('')
+    const [isPrivateDisabled, setIsPrivateDisabled] = useState(false)
+
+    useEffect(() => {
+        if (event && event.type === 'private' && !event.is_online_registration_enabled) {
+            setIsPrivateDisabled(true)
+        }
+    }, [event])
 
     const registrationSchema = useMemo(() => z.object({
         name: z.string().min(2, t.registration.validation.nameShort),
@@ -62,6 +72,22 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
             try {
                 const data = await getEventById(id)
                 setEvent(data)
+                
+                // Fetch tickets to show ticket dropdown
+                const supabase = createClient()
+                const { data: ticketsData } = await supabase
+                    .from('tickets')
+                    .select('*')
+                    .eq('event_id', id)
+                    
+                if (ticketsData) {
+                    setTickets(ticketsData)
+                    // Auto-select first available ticket
+                    const firstAvailable = ticketsData.find((ticket: Ticket) => ticket.sold < ticket.quantity)
+                    if (firstAvailable) {
+                        setSelectedTicket(firstAvailable.id)
+                    }
+                }
             } catch (err: unknown) {
                 console.error('Error loading event:', err)
                 setError(t.registration.eventNotFoundDesc)
@@ -77,12 +103,19 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         setSubmitting(true)
         setError(null)
         try {
+            if (event.type === 'private' && tickets.length > 0 && !selectedTicket) {
+                setError(language === 'ar' ? 'الرجاء اختيار التذكرة' : 'Please select a ticket')
+                setSubmitting(false)
+                return
+            }
+
             const attendee = await createPublicAttendee({
                 event_id: event.id,
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
                 company: data.company,
+                ticket_id: selectedTicket || undefined
             })
 
             // Generate ticket image
@@ -135,6 +168,24 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         )
     }
 
+    if (isPrivateDisabled) {
+        return (
+            <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        {t.registration.eventNotFound}
+                    </h1>
+                    <p className="text-gray-400 mb-6">
+                        {t.registration.privateRegistrationDisabled || 'This is a private event and no online registration is available.'}
+                    </p>
+                    <Button onClick={() => router.push('/')} variant="primary">
+                        {t.registration.goHome}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className={`min-h-screen bg-gray-950 text-white flex flex-col p-4 md:p-8 ${isRTL ? 'rtl font-arabic' : 'ltr'}`}>
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -146,26 +197,26 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                 {!success ? (
                     <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
                         <div className="p-8 md:p-12 border-b border-white/10 bg-gradient-to-br from-primary-500/10 to-transparent">
-                            <h1 className="text-3xl md:text-4xl font-bold mb-4">{event.title}</h1>
+                            <h1 className="text-3xl md:text-4xl font-bold mb-4">{event!.title}</h1>
                             <div className="flex flex-wrap gap-4 text-gray-300">
                                 <div className="flex items-center gap-2">
                                     <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span>{event.date}</span>
+                                    <span>{event!.date}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>{event.time}</span>
+                                    <span>{event!.time}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span>{event.location}</span>
+                                    <span>{event!.location}</span>
                                 </div>
                             </div>
                         </div>
@@ -202,6 +253,37 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                                     error={errors.company?.message as string}
                                     placeholder={t.registration.companyPlaceholder}
                                 />
+                                
+                                {event!.type === 'private' && tickets.length > 0 && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                                            {t.events.details.tickets}
+                                        </label>
+                                        <select
+                                            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                            value={selectedTicket}
+                                            onChange={(e) => setSelectedTicket(e.target.value)}
+                                            required
+                                        >
+                                            <option value="" disabled className="bg-gray-800 text-gray-400">
+                                                {isRTL ? 'اختر التذكرة' : 'Select a ticket'}
+                                            </option>
+                                            {tickets.map(ticket => {
+                                                const isSoldOut = ticket.sold >= ticket.quantity;
+                                                return (
+                                                    <option 
+                                                        key={ticket.id} 
+                                                        value={ticket.id} 
+                                                        disabled={isSoldOut}
+                                                        className="bg-gray-800 text-white"
+                                                    >
+                                                        {ticket.name} - {ticket.price === 0 ? t.events.details.free : `${ticket.price}`} {isSoldOut ? `(${t.events.details.ticketSoldOut || 'Sold out'})` : ''}
+                                                    </option>
+                                                )
+                                            })}
+                                        </select>
+                                    </div>
+                                )}
  
                                 <Button
                                     type="submit"
@@ -226,14 +308,14 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                             {t.registration.successTitle}
                         </h1>
                         <p className="text-gray-400 text-lg mb-8 max-w-md mx-auto">
-                            {t.registration.successDesc.replace('{title}', event.title)}
+                            {t.registration.successDesc.replace('{title}', event!.title)}
                         </p>
 
                         {ticketUrl && (
                             <div className="space-y-6">
                                 <div className="bg-white p-4 rounded-xl inline-block shadow-lg">
                                     <Image 
-                                        src={ticketUrl} 
+                                        src={ticketUrl!} 
                                         alt="E-Ticket" 
                                         width={600} 
                                         height={300} 
@@ -243,8 +325,8 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-4 justify-center mt-8">
                                     <a
-                                        href={ticketUrl}
-                                        download={`Ticket-${event.title.replace(/\s+/g, '-')}.png`}
+                                        href={ticketUrl!}
+                                        download={`Ticket-${event!.title.replace(/\s+/g, '-')}.png`}
                                         className="flex-1"
                                     >
                                         <Button variant="primary" fullWidth className="h-12">

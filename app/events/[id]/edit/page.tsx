@@ -28,6 +28,9 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
         time: '',
         location: '',
         max_attendees: 0,
+        category: '',
+        type: 'public' as 'public' | 'private',
+        is_online_registration_enabled: true,
     })
 
     useEffect(() => {
@@ -41,6 +44,9 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                     time: event.time,
                     location: event.location,
                     max_attendees: event.max_attendees,
+                    category: event.category || '',
+                    type: event.type as 'public' | 'private',
+                    is_online_registration_enabled: event.is_online_registration_enabled,
                 })
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : 'Error loading event')
@@ -62,9 +68,14 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
         setUpdating(true)
 
         try {
-            await updateEvent(params.id, formData)
-            showToast(t.events.details.deleteSuccess.includes('حذف') ? 'تم تعديل الفعالية بنجاح' : 'Event updated successfully!')
+            // Extract fields that shouldn't be updated
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { category: _c, type: _t, is_online_registration_enabled: _i, ...updateData } = formData
+            await updateEvent(params.id, updateData)
             router.push(`/events/${params.id}`)
+            setTimeout(() => {
+                showToast(t.events.details.deleteSuccess.includes('حذف') ? 'تم تعديل الفعالية بنجاح' : 'Event updated successfully!')
+            }, 100)
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Error updating event'
             setError(msg)
@@ -130,6 +141,46 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 text-start">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                                            {t.events.eventCategory || 'Category'}
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            value={formData.category}
+                                            onChange={() => {}}
+                                            disabled
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                                            {t.events.eventType || 'Event Type'}
+                                        </label>
+                                        <div className="flex gap-4 pt-3 opacity-50 pointer-events-none">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    className="w-4 h-4 text-primary-500 bg-white/5 border-white/10 focus:ring-primary-500"
+                                                    checked={formData.type === 'public'}
+                                                    readOnly
+                                                />
+                                                <span className="text-white">{t.events.typePublic || 'Public'}</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    className="w-4 h-4 text-primary-500 bg-white/5 border-white/10 focus:ring-primary-500"
+                                                    checked={formData.type === 'private'}
+                                                    readOnly
+                                                />
+                                                <span className="text-white">{t.events.typePrivate || 'Private'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 text-start">
                                     <Input
                                         label={t.events.eventDate}
                                         type="date"
@@ -168,6 +219,23 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                                         required
                                         helperText={t.events.maxAttendeesHelper}
                                     />
+                                    {formData.type === 'private' && (
+                                        <div className="flex items-center h-full pt-6 opacity-50 pointer-events-none">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only"
+                                                        checked={formData.is_online_registration_enabled}
+                                                        readOnly
+                                                    />
+                                                    <div className={`block w-10 h-6 rounded-full transition-colors ${formData.is_online_registration_enabled ? 'bg-primary-500' : 'bg-gray-600'}`}></div>
+                                                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.is_online_registration_enabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                                </div>
+                                                <span className="text-white">{t.events.onlineRegistration || 'Online Registration'}</span>
+                                            </label>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex gap-4 pt-4">

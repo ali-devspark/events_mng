@@ -51,6 +51,7 @@ export async function getEventById(id: string) {
 }
 
 export async function createEvent(input: CreateEventInput) {
+    const { ticket_price, ...eventData } = input
     // Generate unique barcode
     const barcode = `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
 
@@ -61,7 +62,7 @@ export async function createEvent(input: CreateEventInput) {
     const { data, error } = await supabase
         .from('events')
         .insert({
-            ...input,
+            ...eventData,
             user_id: user.id,
             barcode,
         })
@@ -69,6 +70,22 @@ export async function createEvent(input: CreateEventInput) {
         .single()
 
     if (error) throw error
+    
+    if (data.type === 'public') {
+        const { error: ticketError } = await supabase
+            .from('tickets')
+            .insert({
+                event_id: data.id,
+                name: 'عام',
+                quantity: data.max_attendees,
+                price: ticket_price || 0,
+            })
+            
+        if (ticketError) {
+             console.error("Failed to create general ticket", ticketError);
+        }
+    }
+    
     return data as Event
 }
 
@@ -223,6 +240,24 @@ export async function getAttendeesByEventId(eventId: string) {
 }
 
 export async function createAttendee(input: CreateAttendeeInput) {
+    if (input.ticket_id) {
+        // Check ticket availability
+        const { data: ticket, error: ticketError } = await supabase
+            .from('tickets')
+            .select('id, quantity, sold')
+            .eq('id', input.ticket_id)
+            .single()
+
+        if (ticketError || !ticket) throw new Error('TICKET_NOT_FOUND')
+        if (ticket.sold >= ticket.quantity) throw new Error('TICKET_SOLD_OUT')
+
+        // Increment sold count
+        await supabase
+            .from('tickets')
+            .update({ sold: ticket.sold + 1 })
+            .eq('id', ticket.id)
+    }
+
     const { data, error } = await supabase
         .from('attendees')
         .insert(input)
@@ -234,10 +269,58 @@ export async function createAttendee(input: CreateAttendeeInput) {
 }
 
 export async function createPublicAttendee(input: CreateAttendeeInput) {
+    // Check event details
+    const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('id, type, is_online_registration_enabled')
+        .eq('id', input.event_id)
+        .single()
+        
+    if (eventError || !event) throw new Error('EVENT_NOT_FOUND')
+    
+    if (event.type === 'private' && !event.is_online_registration_enabled) {
+        throw new Error('REGISTRATION_DISABLED')
+    }
+
+    let ticketId = input.ticket_id;
+    
+    if (event.type === 'public') {
+        const { data: tickets, error: ticketsError } = await supabase
+            .from('tickets')
+            .select('id, quantity, sold')
+            .eq('event_id', event.id)
+            .eq('name', 'عام')
+            
+        if (ticketsError || !tickets || tickets.length === 0) throw new Error('EVENT_SOLD_OUT')
+        const generalTicket = tickets[0];
+        
+        if (generalTicket.sold >= generalTicket.quantity) {
+             throw new Error('EVENT_SOLD_OUT')
+        }
+        ticketId = generalTicket.id;
+    }
+    
+    if (ticketId) {
+        const { data: ticket, error: ticketError } = await supabase
+            .from('tickets')
+            .select('id, quantity, sold')
+            .eq('id', ticketId)
+            .single()
+
+        if (ticketError || !ticket) throw new Error('TICKET_NOT_FOUND')
+        if (ticket.sold >= ticket.quantity) throw new Error('TICKET_SOLD_OUT')
+
+        await supabase
+            .from('tickets')
+            .update({ sold: ticket.sold + 1 })
+            .eq('id', ticketId)
+    }
+
     const { data, error } = await supabase
         .from('attendees')
         .insert({
             ...input,
+            ticket_id: ticketId,
             registration_source: 'public_link'
         })
         .select()
@@ -271,9 +354,40 @@ export async function getUserEventStats(): Promise<EventStats> {
     const user = session?.user
     if (!user) throw new Error('Not authenticated')
 
-    const { data, error } = await supabase
-        .rpc('get_user_event_stats', { user_uuid: user.id })
+    // Fetch all events for the user
+    const { data: events, error: eventsError } = await supabase
+        .from('events')
+        .select('id, status')
+        .eq('user_id', user.id)
 
-    if (error) throw error
-    return data as EventStats
+    if (eventsError) throw eventsError
+
+    const eventIds = (events ?? []).map((e) => e.id)
+
+    // Count total attendees across all user events
+    let total_attendees = 0
+    if (eventIds.length > 0) {
+        const { count, error: attendeesError } = await supabase
+            .from('attendees')
+            .select('id', { count: 'exact', head: true })
+            .in('event_id', eventIds)
+
+        if (attendeesError) throw attendeesError
+        total_attendees = count ?? 0
+    }
+
+    const total_events = events?.length ?? 0
+    const upcoming_events = events?.filter((e) => e.status === 'upcoming').length ?? 0
+    const ongoing_events = events?.filter((e) => e.status === 'ongoing').length ?? 0
+    const finished_events = events?.filter((e) => e.status === 'finished').length ?? 0
+    const cancelled_events = events?.filter((e) => e.status === 'cancelled').length ?? 0
+
+    return {
+        total_events,
+        upcoming_events,
+        ongoing_events,
+        finished_events,
+        cancelled_events,
+        total_attendees,
+    }
 }

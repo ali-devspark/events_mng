@@ -27,7 +27,7 @@ function VerifyEmailContent() {
         const errorCode = searchParams.get('error_code')
 
         if (user?.email_confirmed_at) {
-            setStatus('already-verified')
+            setTimeout(() => setStatus('already-verified'), 0)
             // Delay redirect to allow user to see success message
             const timer = setTimeout(() => {
                 router.push('/dashboard')
@@ -36,12 +36,14 @@ function VerifyEmailContent() {
         }
 
         if (error) {
-            if (errorCode === 'otp_expired') {
-                setStatus('expired')
-            } else {
-                setStatus('error')
-                setMessage(searchParams.get('error_description') || t.auth.verifyEmail.errorSubtitle)
-            }
+            setTimeout(() => {
+                if (errorCode === 'otp_expired') {
+                    setStatus('expired')
+                } else {
+                    setStatus('error')
+                    setMessage(searchParams.get('error_description') || t.auth.verifyEmail.errorSubtitle)
+                }
+            }, 0)
         }
     }, [user, searchParams, router, t.auth.verifyEmail.errorSubtitle])
 

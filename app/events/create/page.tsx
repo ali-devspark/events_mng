@@ -31,7 +31,20 @@ export default function CreateEventPage() {
         time: '09:00',
         location: '',
         max_attendees: 100,
+        category: 'event_conference',
+        type: 'public' as 'public' | 'private',
+        is_online_registration_enabled: true,
+        ticket_price: 0,
     })
+    const [customCategory, setCustomCategory] = useState('')
+
+    const categories = [
+        { id: 'graduation', label: t.events.categoryGraduation || 'Graduation' },
+        { id: 'wedding', label: t.events.categoryWedding || 'Wedding' },
+        { id: 'engagement', label: t.events.categoryEngagement || 'Engagement' },
+        { id: 'event_conference', label: t.events.categoryConference || 'Event/Conference' },
+        { id: 'other', label: t.events.categoryOther || 'Other' },
+    ]
 
     const handlePreSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -51,14 +64,24 @@ export default function CreateEventPage() {
         setLoading(true)
 
         try {
-            const event = await createEvent(formData)
+            const finalCategory = formData.category === 'other' ? customCategory : categories.find(c => c.id === formData.category)?.label || formData.category;
+            
+            const payload = {
+                ...formData,
+                category: finalCategory,
+                is_online_registration_enabled: formData.type === 'private' ? formData.is_online_registration_enabled : true
+            };
+
+            const event = await createEvent(payload)
             
             if (subscription) {
                 await incrementSubscriptionUsage(subscription.id)
             }
 
-            showToast(t.events.createSuccess || 'Event created successfully!')
             router.push(`/events/${event.id}`)
+            setTimeout(() => {
+                showToast(t.events.createSuccess || 'Event created successfully!')
+            }, 100)
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Error creating event'
             setError(msg)
@@ -113,6 +136,82 @@ export default function CreateEventPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                                            {t.events.eventCategory || 'Category'}
+                                        </label>
+                                        <select
+                                            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            required
+                                        >
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id} className="bg-gray-800 text-white">
+                                                    {cat.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {formData.category === 'other' && (
+                                        <Input
+                                            label={t.events.categoryOtherPlaceholder || 'Specify category'}
+                                            type="text"
+                                            value={customCategory}
+                                            onChange={(e) => setCustomCategory(e.target.value)}
+                                            required
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                                            {t.events.eventType || 'Event Type'}
+                                        </label>
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    className="w-4 h-4 text-primary-500 bg-white/5 border-white/10 focus:ring-primary-500"
+                                                    checked={formData.type === 'public'}
+                                                    onChange={() => setFormData({ ...formData, type: 'public' })}
+                                                />
+                                                <span className="text-white">{t.events.typePublic || 'Public'}</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    className="w-4 h-4 text-primary-500 bg-white/5 border-white/10 focus:ring-primary-500"
+                                                    checked={formData.type === 'private'}
+                                                    onChange={() => setFormData({ ...formData, type: 'private' })}
+                                                />
+                                                <span className="text-white">{t.events.typePrivate || 'Private'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {formData.type === 'private' && (
+                                        <div className="flex items-center h-full pt-6">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only"
+                                                        checked={formData.is_online_registration_enabled}
+                                                        onChange={(e) => setFormData({ ...formData, is_online_registration_enabled: e.target.checked })}
+                                                    />
+                                                    <div className={`block w-10 h-6 rounded-full transition-colors ${formData.is_online_registration_enabled ? 'bg-primary-500' : 'bg-gray-600'}`}></div>
+                                                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.is_online_registration_enabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                                </div>
+                                                <span className="text-white">{t.events.onlineRegistration || 'Online Registration'}</span>
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
                                     <Input
                                         label={t.events.eventDate}
                                         type="date"
@@ -151,6 +250,21 @@ export default function CreateEventPage() {
                                         required
                                         helperText={t.events.maxAttendeesHelper}
                                     />
+                                    {formData.type === 'public' && (
+                                        <Input
+                                            label={t.events.ticketPrice || 'Ticket Price'}
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={formData.ticket_price}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value);
+                                                setFormData({ ...formData, ticket_price: isNaN(val) ? 0 : val });
+                                            }}
+                                            required
+                                            helperText={t.events.ticketPrice ? '' : (t.events.details?.free || 'Free')}
+                                        />
+                                    )}
                                 </div>
 
                                 <div className="flex gap-4 pt-4">
