@@ -302,7 +302,7 @@ export default function CreateEventPage() {
                                         value={formData.max_attendees || ''}
                                         onChange={(e) => {
                                             const val = parseInt(e.target.value);
-                                            setFormData({ ...formData, max_attendees: isNaN(val) ? '' as any : val });
+                                            setFormData({ ...formData, max_attendees: isNaN(val) ? '' as unknown as number : val });
                                         }}
                                         onBlur={() => {
                                             if (!formData.max_attendees || Number(formData.max_attendees) < 1) {

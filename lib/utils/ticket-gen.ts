@@ -12,8 +12,8 @@ export interface TicketData {
 export async function generateQRCode(data: string): Promise<string> {
     try {
         return await QRCode.toDataURL(data, {
-            width: 300,
-            margin: 2,
+            width: 400,
+            margin: 4,
             color: {
                 dark: '#000000',
                 light: '#ffffff',
@@ -85,6 +85,10 @@ export async function generateTicketImage(data: TicketData): Promise<string> {
             qrImage.onerror = () => reject(new Error('QR Load Failed'))
             qrImage.src = qrUrl
         })
+        // Draw a white background plate for the QR code to ensure max readability
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(345, 45, 210, 210)
+        
         ctx.drawImage(qrImage, 350, 50, 200, 200)
 
         // Draw barcode text below QR

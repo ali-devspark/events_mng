@@ -14,10 +14,12 @@ import { formatDate, formatTime } from '@/lib/date-utils'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Tabs from '@/components/ui/Tabs'
-import { getAttendeesByEventId, checkInAttendee } from '@/lib/api/events'
-import { Attendee } from '@/types'
+import { getAttendeesByEventId, checkInAttendee, createAttendee, deleteAttendee } from '@/lib/api/events'
+import { Attendee, CreateAttendeeInput } from '@/types'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
+import { generateTicketImage } from '@/lib/utils/ticket-gen'
+
 
 export default function EventDetailsPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
     const params = use(paramsPromise)
@@ -44,6 +46,23 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
         quantity: 1,
         price: 0,
     })
+
+    const [showAddAttendeeModal, setShowAddAttendeeModal] = useState(false)
+    const [attendeeForm, setAttendeeForm] = useState<CreateAttendeeInput>({
+        event_id: params.id,
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        ticket_id: '',
+        registration_source: 'manual'
+    })
+    
+    const [showAttendeeDetailsModal, setShowAttendeeDetailsModal] = useState(false)
+    const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null)
+    const [ticketUrl, setTicketUrl] = useState<string | null>(null)
+    const [showDeleteAttendeeConfirm, setShowDeleteAttendeeConfirm] = useState(false)
+    const [attendeeToDelete, setAttendeeToDelete] = useState<string | null>(null)
 
     const loadEventData = useCallback(async () => {
         try {
@@ -114,11 +133,76 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
 
     async function handleCheckIn(attendeeId: string) {
         try {
-            await checkInAttendee(attendeeId)
+            await checkInAttendee(attendeeId, params.id)
             showToast(t.events.details.checkInSuccess)
             loadEventData()
         } catch (err: unknown) {
-            showToast(err instanceof Error ? err.message : t.events.details.checkInError, 'error')
+            let message = err instanceof Error ? err.message : t.events.details.checkInError
+            if (err instanceof Error) {
+                if (err.message === 'EVENT_FINISHED') {
+                    message = isRTL ? 'عذراً، هذه الفعالية منتهية ولا يمكن التحضير لها الآن' : 'Sorry, this event has finished and check-in is no longer possible'
+                } else if (err.message === 'EVENT_NOT_STARTED') {
+                    message = isRTL ? 'عذراً، لم يحن وقت الفعالية بعد' : 'Sorry, the event has not started yet'
+                }
+            }
+            showToast(message, 'error')
+        }
+    }
+
+    async function handleCreateAttendee(e: React.FormEvent) {
+        e.preventDefault()
+        try {
+            await createAttendee(attendeeForm)
+            showToast(isRTL ? 'تم إضافة المدعو بنجاح' : 'Attendee added successfully')
+            setShowAddAttendeeModal(false)
+            setAttendeeForm({
+                event_id: params.id,
+                name: '',
+                email: '',
+                phone: '',
+                company: '',
+                ticket_id: '',
+                registration_source: 'manual'
+            })
+            loadEventData()
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : (isRTL ? 'حدث خطأ أثناء الإضافة' : 'Error adding attendee'), 'error')
+        }
+    }
+
+    async function handleConfirmDeleteAttendee() {
+        if (!attendeeToDelete) return
+        setIsDeleting(true)
+        try {
+            await deleteAttendee(attendeeToDelete)
+            showToast(isRTL ? 'تم حذف المدعو بنجاح' : 'Attendee deleted successfully')
+            setAttendeeToDelete(null)
+            setShowDeleteAttendeeConfirm(false)
+            loadEventData()
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : (isRTL ? 'حدث خطأ أثناء الحذف' : 'Error deleting attendee'), 'error')
+        } finally {
+            setIsDeleting(false)
+        }
+    }
+
+    async function handleViewDetails(attendee: Attendee) {
+        if (!event) return;
+        setSelectedAttendee(attendee);
+        setShowAttendeeDetailsModal(true);
+        try {
+            const imgUrl = await generateTicketImage({
+                eventName: event.title,
+                attendeeName: attendee.name,
+                date: event.date,
+                time: event.time,
+                location: event.location,
+                barcode: `${event.id}:${attendee.id}`
+            });
+            setTicketUrl(imgUrl);
+        } catch (err) {
+            console.error('Failed to generate ticket image:', err);
+            setTicketUrl(null);
         }
     }
 
@@ -174,6 +258,7 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
     }
 
     const isLocked = event ? (new Date(`${event.date}T${event.time}`) <= new Date() || attendees.length > 0) : false;
+    const isFinished = event ? (new Date(`${event.date}T${event.time}`) <= new Date()) : false;
     const totalTickets = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0)
 
     return (
@@ -210,16 +295,18 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                                     </svg>
                                 </button>
-                                <Link href="/scanner">
-                                    <button
-                                        title={t.events.details.scanTickets}
-                                        className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
-                                        </svg>
-                                    </button>
-                                </Link>
+                                {!isFinished && (
+                                    <Link href={`/events/${params.id}/scanner`}>
+                                        <button
+                                            title={t.events.details.scanTickets}
+                                            className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                            </svg>
+                                        </button>
+                                    </Link>
+                                )}
                                 <button
                                     title={t.events.edit}
                                     onClick={(e) => {
@@ -369,7 +456,7 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                             {totalTickets} / {event.max_attendees} {t.events.details.totalSeats}
                                         </p>
                                     </div>
-                                    {event?.type !== 'public' && (
+                                    {event?.type !== 'public' && !isFinished && (
                                         <Button variant="primary" onClick={() => setShowTicketModal(true)}>
                                             {t.events.details.createTicket}
                                         </Button>
@@ -391,7 +478,7 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {event?.type !== 'public' && (
+                                                {event?.type !== 'public' && !isFinished && (
                                                     <button
                                                         onClick={() => setTicketToDelete(ticket.id)}
                                                         className="text-gray-500 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all"
@@ -407,7 +494,7 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 ) : (
                                     <div className="text-center py-20 bg-white/[0.02] rounded-xl border border-dashed border-white/10">
                                         <p className="text-gray-400">{t.events.details.noTickets}</p>
-                                        {event?.type !== 'public' && (
+                                        {event?.type !== 'public' && !isFinished && (
                                             <Button variant="outline" onClick={() => setShowTicketModal(true)} className="mt-4">
                                                 {t.events.details.createTicket}
                                             </Button>
@@ -421,8 +508,37 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                     {activeTab === 'attendees' && (
                         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden text-start">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-white">{t.events.details.attendeeList}</h2>
-                                <p className="text-sm text-gray-400">{attendees.length} {t.events.details.registered}</p>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">{t.events.details.attendeeList}</h2>
+                                    <p className="text-sm text-gray-400">{attendees.length} {t.events.details.registered}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {!isFinished && (
+                                        <Link 
+                                            href={`/events/${params.id}/scanner`}
+                                            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-xl transition-all shadow-lg shadow-primary-500/20 text-sm font-bold"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                            </svg>
+                                            {isRTL ? 'فتح الماسح' : 'Open Scanner'}
+                                        </Link>
+                                    )}
+                                    {event?.type === 'private' && !isFinished && (
+                                        <Button 
+                                            variant="outline" 
+                                            onClick={() => {
+                                                if (tickets.length === 0) {
+                                                    showToast(isRTL ? 'يجب انشاء التذاكر أولاً' : 'You must create tickets first', 'error');
+                                                    return;
+                                                }
+                                                setShowAddAttendeeModal(true);
+                                            }}
+                                        >
+                                            {isRTL ? 'إضافة مدعو' : 'Add Attendee'}
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="overflow-x-auto">
@@ -456,8 +572,8 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    {!attendee.checked_in && (
+                                                <td className="px-6 py-4 flex gap-2">
+                                                    {!attendee.checked_in && !isFinished && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -465,6 +581,27 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                                         >
                                                             {t.events.details.checkIn}
                                                         </Button>
+                                                    )}
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleViewDetails(attendee)}
+                                                    >
+                                                        {isRTL ? 'التفاصيل' : 'Details'}
+                                                    </Button>
+                                                    {!isFinished && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setAttendeeToDelete(attendee.id);
+                                                                setShowDeleteAttendeeConfirm(true);
+                                                            }}
+                                                            className="p-1.5 md:p-2 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 transition-all"
+                                                            title={isRTL ? 'حذف المدعو' : 'Delete'}
+                                                        >
+                                                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
                                                     )}
                                                 </td>
                                             </tr>
@@ -549,6 +686,141 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                 variant="danger"
                 loading={isDeleting}
             />
+            {/* Attendee Deletion Confirm */}
+            <ConfirmDialog
+                isOpen={showDeleteAttendeeConfirm}
+                onClose={() => setShowDeleteAttendeeConfirm(false)}
+                onConfirm={handleConfirmDeleteAttendee}
+                title={isRTL ? 'حذف المدعو' : 'Delete Attendee'}
+                message={isRTL ? 'هل أنت متأكد أنك تريد حذف هذا المدعو؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to delete this attendee? This cannot be undone.'}
+                variant="danger"
+                loading={isDeleting}
+            />
+
+            {/* Add Attendee Modal */}
+            <Modal
+                isOpen={showAddAttendeeModal}
+                onClose={() => setShowAddAttendeeModal(false)}
+                title={isRTL ? 'إضافة مدعو' : 'Add Attendee'}
+            >
+                <form onSubmit={handleCreateAttendee} className="space-y-4 text-start">
+                    <Input
+                        label={t.registration.fullName || 'Full Name'}
+                        type="text"
+                        value={attendeeForm.name}
+                        onChange={(e) => setAttendeeForm({ ...attendeeForm, name: e.target.value })}
+                        required
+                    />
+                    <Input
+                        label={t.registration.email || 'Email'}
+                        type="email"
+                        value={attendeeForm.email}
+                        onChange={(e) => setAttendeeForm({ ...attendeeForm, email: e.target.value })}
+                        required
+                    />
+                    <Input
+                        label={t.registration.phone || 'Phone'}
+                        type="text"
+                        value={attendeeForm.phone}
+                        onChange={(e) => setAttendeeForm({ ...attendeeForm, phone: e.target.value })}
+                        required
+                    />
+                    <Input
+                        label={t.registration.company || 'Company'}
+                        type="text"
+                        value={attendeeForm.company}
+                        onChange={(e) => setAttendeeForm({ ...attendeeForm, company: e.target.value })}
+                        required
+                    />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                            {isRTL ? 'نوع التذكرة' : 'Ticket Type'}
+                        </label>
+                        <select
+                            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                            value={attendeeForm.ticket_id || ''}
+                            onChange={(e) => setAttendeeForm({ ...attendeeForm, ticket_id: e.target.value })}
+                            required
+                        >
+                            <option value="" disabled className="bg-gray-800 text-gray-400">
+                                {isRTL ? 'اختر التذكرة' : 'Select a ticket'}
+                            </option>
+                            {tickets.map(ticket => {
+                                const isSoldOut = ticket.sold >= ticket.quantity;
+                                return (
+                                    <option 
+                                        key={ticket.id} 
+                                        value={ticket.id} 
+                                        disabled={isSoldOut}
+                                        className="bg-gray-800 text-white"
+                                    >
+                                        {ticket.name} - {ticket.price === 0 ? t.events.details.free : `${ticket.price}`} {isSoldOut ? `(${t.events.details.ticketSoldOut || 'Sold out'})` : ''}
+                                    </option>
+                                )
+                            })}
+                        </select>
+                    </div>
+
+                    <Button 
+                        type="submit" 
+                        variant="primary" 
+                        fullWidth
+                        disabled={!attendeeForm.ticket_id || (tickets.find(t => t.id === attendeeForm.ticket_id)?.sold ?? 0) >= (tickets.find(t => t.id === attendeeForm.ticket_id)?.quantity ?? 0)}
+                    >
+                        {isRTL ? 'إضافة' : 'Add'}
+                    </Button>
+                </form>
+            </Modal>
+
+            {/* Attendee Details Modal */}
+            <Modal
+                isOpen={showAttendeeDetailsModal}
+                onClose={() => setShowAttendeeDetailsModal(false)}
+                title={isRTL ? 'تفاصيل المدعو' : 'Attendee Details'}
+            >
+                {selectedAttendee && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+                        {/* Attendee Info (Right in RTL, Left in LTR) */}
+                        <div className="text-start space-y-4">
+                            <h3 className="text-lg font-bold border-b border-white/10 pb-2 mb-4">{isRTL ? 'بيانات المدعو' : 'Attendee Info'}</h3>
+                            <div className="space-y-3">
+                                <p><span className="font-bold text-gray-400">{t.events.details.name}:</span> <br/>{selectedAttendee.name}</p>
+                                <p><span className="font-bold text-gray-400">{t.registration.email || 'Email'}:</span> <br/>{selectedAttendee.email}</p>
+                                <p><span className="font-bold text-gray-400">{t.events.details.phone}:</span> <br/>{selectedAttendee.phone}</p>
+                                <p><span className="font-bold text-gray-400">{t.events.details.company}:</span> <br/>{selectedAttendee.company}</p>
+                            </div>
+                        </div>
+                        
+                        {/* Barcode and Download (Left in RTL, Right in LTR) */}
+                        <div className="flex flex-col items-center space-y-4 border-t md:border-t-0 md:border-s border-white/10 pt-4 md:pt-0 md:ps-6">
+                            <h3 className="text-lg font-bold">{isRTL ? 'تذكرة الحضور' : 'Attendance Ticket'}</h3>
+                            <div className={`p-2 bg-white rounded-2xl inline-block shadow-lg ${isFinished ? 'opacity-30 grayscale' : ''}`}>
+                                <BarcodeDisplay event={event} size={180} overrideValue={`${event.id}:${selectedAttendee.id}`} />
+                            </div>
+                            {isFinished && (
+                                <p className="text-red-400 text-xs font-bold text-center mt-2">{isRTL ? 'الفعالية منتهية' : 'Event Finished'}</p>
+                            )}
+                            
+                            {ticketUrl && (
+                                <div className="w-full mt-auto pt-4">
+                                    <a
+                                        href={ticketUrl}
+                                        download={`Ticket-${selectedAttendee.name.replace(/\s+/g, '-')}.png`}
+                                        className="block w-full"
+                                    >
+                                        <Button variant="primary" fullWidth className="h-11">
+                                            <svg className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            <span className="text-sm">{t.registration.downloadImage || 'Download'}</span>
+                                        </Button>
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     )
 }

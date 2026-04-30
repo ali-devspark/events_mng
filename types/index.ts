@@ -106,6 +106,7 @@ export interface CreateAttendeeInput {
     email: string
     phone?: string
     company?: string
+    registration_source?: string
 }
 
 export interface EventWithTickets extends Event {

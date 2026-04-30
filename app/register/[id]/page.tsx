@@ -32,7 +32,7 @@ const zodResolver = (schema: z.ZodSchema) => async (data: unknown) => {
 export default function PublicRegistrationPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const router = useRouter()
-    const { t, isRTL, language } = useLanguage()
+    const { t, isRTL } = useLanguage()
     const [event, setEvent] = useState<Event | null>(null)
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)

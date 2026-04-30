@@ -66,16 +66,7 @@ const Sidebar: React.FC = () => {
                 </svg>
             ),
         },
-        {
-            name: t.nav.ticketScanner,
-            shortName: isRTL ? 'الماسح' : 'Scanner',
-            href: '/scanner',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-16v1m0 11v1M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2zM9 9h6v6H9V9z" />
-                </svg>
-            ),
-        },
+
         {
             name: t.nav.settings,
             shortName: isRTL ? 'الإعدادات' : 'Settings',
