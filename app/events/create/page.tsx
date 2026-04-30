@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import Input from '@/components/ui/Input'
@@ -15,26 +15,60 @@ import { incrementSubscriptionUsage } from '@/lib/api/subscriptions'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
 
+const CountdownWarning = ({ targetDate, isRTL }: { targetDate: Date, isRTL: boolean }) => {
+    const [timeLeft, setTimeLeft] = useState(() => Math.max(0, targetDate.getTime() - Date.now()));
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newTimeLeft = Math.max(0, targetDate.getTime() - Date.now());
+            setTimeLeft(newTimeLeft);
+            if (newTimeLeft <= 0) clearInterval(interval);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [targetDate]);
+
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    return (
+        <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400">
+            <div className="font-bold mb-2">
+                {isRTL ? 'تنبيه: لن تتمكن من التعديل أو الحذف بعد انقضاء هذا الوقت' : 'Warning: You will not be able to edit or delete after this time'}
+            </div>
+            <div className="text-2xl font-mono text-center font-bold" dir="ltr">
+                {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </div>
+        </div>
+    );
+};
+
 export default function CreateEventPage() {
     const router = useRouter()
-    const { t } = useLanguage()
+    const { t, isRTL } = useLanguage()
     const { showToast } = useToast()
     const { subscription, isFeatureAllowed } = useSubscription()
-    
+
     const [loading, setLoading] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
     const [error, setError] = useState('')
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        date: formatDateForInput(new Date()),
-        time: '09:00',
-        location: '',
-        max_attendees: 100,
-        category: 'event_conference',
-        type: 'public' as 'public' | 'private',
-        is_online_registration_enabled: true,
-        ticket_price: 0,
+    const [formData, setFormData] = useState(() => {
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return {
+            title: '',
+            description: '',
+            date: formatDateForInput(new Date()),
+            time: `${hours}:${minutes}`,
+            location: '',
+            max_attendees: 100,
+            category: 'event_conference',
+            type: 'public' as 'public' | 'private',
+            is_online_registration_enabled: true,
+            ticket_price: 0,
+        };
     })
     const [customCategory, setCustomCategory] = useState('')
 
@@ -49,6 +83,18 @@ export default function CreateEventPage() {
     const handlePreSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
+
+        const eventDateTime = new Date(`${formData.date}T${formData.time}`);
+        const oneHourFromNow = new Date();
+        oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
+        oneHourFromNow.setMinutes(oneHourFromNow.getMinutes() - 1); 
+
+        if (eventDateTime < oneHourFromNow) {
+            const msg = isRTL ? 'يجب أن يكون وقت الفعالية بعد ساعة من الآن على الأقل' : 'Event time must be at least 1 hour from now';
+            setError(msg);
+            showToast(msg, 'error');
+            return;
+        }
 
         if (!isFeatureAllowed('create_event')) {
             setError(t.common?.error || 'Subscription limit reached or expired')
@@ -65,7 +111,7 @@ export default function CreateEventPage() {
 
         try {
             const finalCategory = formData.category === 'other' ? customCategory : categories.find(c => c.id === formData.category)?.label || formData.category;
-            
+
             const payload = {
                 ...formData,
                 category: finalCategory,
@@ -73,15 +119,13 @@ export default function CreateEventPage() {
             };
 
             const event = await createEvent(payload)
-            
+
             if (subscription) {
                 await incrementSubscriptionUsage(subscription.id)
             }
 
+            showToast(t.events.createSuccess || 'Event created successfully!')
             router.push(`/events/${event.id}`)
-            setTimeout(() => {
-                showToast(t.events.createSuccess || 'Event created successfully!')
-            }, 100)
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Error creating event'
             setError(msg)
@@ -215,8 +259,21 @@ export default function CreateEventPage() {
                                     <Input
                                         label={t.events.eventDate}
                                         type="date"
+                                        min={new Date().toLocaleDateString('en-CA')}
                                         value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        onChange={(e) => {
+                                            const newDate = e.target.value;
+                                            let newTime = formData.time;
+                                            const today = new Date().toLocaleDateString('en-CA');
+                                            if (newDate === today) {
+                                                const now = new Date();
+                                                now.setHours(now.getHours() + 1);
+                                                newTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                                            } else {
+                                                newTime = '09:00';
+                                            }
+                                            setFormData({ ...formData, date: newDate, time: newTime });
+                                        }}
                                         required
                                     />
                                     <Input
@@ -242,29 +299,19 @@ export default function CreateEventPage() {
                                         label={t.events.maxAttendeesLabel}
                                         type="number"
                                         min="1"
-                                        value={formData.max_attendees}
+                                        value={formData.max_attendees || ''}
                                         onChange={(e) => {
                                             const val = parseInt(e.target.value);
-                                            setFormData({ ...formData, max_attendees: isNaN(val) ? 0 : val });
+                                            setFormData({ ...formData, max_attendees: isNaN(val) ? '' as any : val });
+                                        }}
+                                        onBlur={() => {
+                                            if (!formData.max_attendees || Number(formData.max_attendees) < 1) {
+                                                setFormData({ ...formData, max_attendees: 1 });
+                                            }
                                         }}
                                         required
                                         helperText={t.events.maxAttendeesHelper}
                                     />
-                                    {formData.type === 'public' && (
-                                        <Input
-                                            label={t.events.ticketPrice || 'Ticket Price'}
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={formData.ticket_price}
-                                            onChange={(e) => {
-                                                const val = parseFloat(e.target.value);
-                                                setFormData({ ...formData, ticket_price: isNaN(val) ? 0 : val });
-                                            }}
-                                            required
-                                            helperText={t.events.ticketPrice ? '' : (t.events.details?.free || 'Free')}
-                                        />
-                                    )}
                                 </div>
 
                                 <div className="flex gap-4 pt-4">
@@ -291,7 +338,14 @@ export default function CreateEventPage() {
                 onClose={() => setShowConfirm(false)}
                 onConfirm={handleConfirmCreate}
                 title={t.events.confirmCreateTitle || 'Create New Event'}
-                message={t.events.confirmCreateMessage || 'Are you sure you want to create this event?'}
+                message={
+                    <div>
+                        {t.events.confirmCreateMessage || 'Are you sure you want to create this event?'}
+                        {formData.date === new Date().toLocaleDateString('en-CA') && (
+                            <CountdownWarning targetDate={new Date(`${formData.date}T${formData.time}`)} isRTL={isRTL} />
+                        )}
+                    </div>
+                }
                 confirmLabel={t.events.createButton}
                 loading={loading}
             />

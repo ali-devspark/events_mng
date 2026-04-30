@@ -24,19 +24,19 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
     const router = useRouter()
     const { t, isRTL } = useLanguage()
     const { showToast } = useToast()
-    
+
     const [event, setEvent] = useState<Event | null>(null)
     const [tickets, setTickets] = useState<Ticket[]>([])
     const [attendees, setAttendees] = useState<Attendee[]>([])
     const [activeTab, setActiveTab] = useState('overview')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    
+
     const [showTicketModal, setShowTicketModal] = useState(false)
     const [showDeleteEventConfirm, setShowDeleteEventConfirm] = useState(false)
     const [ticketToDelete, setTicketToDelete] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
-    
+
     const [publicLink, setPublicLink] = useState('')
     const [ticketForm, setTicketForm] = useState<CreateTicketInput>({
         event_id: params.id,
@@ -123,6 +123,10 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
     }
 
     const copyPublicLink = async () => {
+        if (event?.type === 'public') {
+            showToast(isRTL ? 'الفعالية عامة ولا يوجد رابط تسجيل لها' : 'This is a public event and requires no registration', 'error');
+            return;
+        }
         if (event?.type === 'private' && !event.is_online_registration_enabled) {
             showToast(t.registration.privateRegistrationDisabled || 'This is a private event and no online registration is available.', 'error');
             return;
@@ -169,6 +173,7 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
         )
     }
 
+    const isLocked = event ? (new Date(`${event.date}T${event.time}`) <= new Date() || attendees.length > 0) : false;
     const totalTickets = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0)
 
     return (
@@ -198,8 +203,8 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 <button
                                     onClick={copyPublicLink}
                                     title={t.events.details.registrationLink}
-                                    disabled={event?.type === 'private' && !event?.is_online_registration_enabled}
-                                    className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all ${event?.type === 'private' && !event?.is_online_registration_enabled ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'}`}
+                                    disabled={event?.type === 'public' || (event?.type === 'private' && !event?.is_online_registration_enabled)}
+                                    className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all ${event?.type === 'public' || (event?.type === 'private' && !event?.is_online_registration_enabled) ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'}`}
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -215,20 +220,33 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                         </svg>
                                     </button>
                                 </Link>
-                                <Link href={`/events/${params.id}/edit`}>
-                                    <button
-                                        title={t.events.edit}
-                                        className="p-2 md:px-3 md:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                </Link>
                                 <button
-                                    onClick={() => setShowDeleteEventConfirm(true)}
+                                    title={t.events.edit}
+                                    onClick={(e) => {
+                                        if (isLocked) {
+                                            e.preventDefault();
+                                            showToast(isRTL ? 'لا يمكن تعديل الفعالية بعد بدايتها أو بدء التسجيل فيها.' : 'Cannot edit event after it has started or registrations exist.', 'error');
+                                        } else {
+                                            router.push(`/events/${params.id}/edit`);
+                                        }
+                                    }}
+                                    className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all ${isLocked ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'}`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        if (isLocked) {
+                                            e.preventDefault();
+                                            showToast(isRTL ? 'لا يمكن حذف الفعالية بعد بدايتها أو بدء التسجيل فيها.' : 'Cannot delete event after it has started or registrations exist.', 'error');
+                                        } else {
+                                            setShowDeleteEventConfirm(true);
+                                        }
+                                    }}
                                     title={t.events.details.delete}
-                                    className="p-2 md:px-3 md:py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 transition-all"
+                                    className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all ${isLocked ? 'bg-white/5 border-white/5 text-gray-500 cursor-not-allowed opacity-50' : 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20 text-red-400'}`}
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -373,14 +391,16 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button
-                                                    onClick={() => setTicketToDelete(ticket.id)}
-                                                    className="text-gray-500 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
+                                                {event?.type !== 'public' && (
+                                                    <button
+                                                        onClick={() => setTicketToDelete(ticket.id)}
+                                                        className="text-gray-500 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

@@ -11,6 +11,34 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
 
+const CountdownWarning = ({ targetDate, isRTL }: { targetDate: Date, isRTL: boolean }) => {
+    const [timeLeft, setTimeLeft] = useState(() => Math.max(0, targetDate.getTime() - Date.now()));
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newTimeLeft = Math.max(0, targetDate.getTime() - Date.now());
+            setTimeLeft(newTimeLeft);
+            if (newTimeLeft <= 0) clearInterval(interval);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [targetDate]);
+
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    return (
+        <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400">
+            <div className="font-bold mb-2">
+                {isRTL ? 'تنبيه: لن تتمكن من التعديل أو الحذف بعد انقضاء هذا الوقت' : 'Warning: You will not be able to edit or delete after this time'}
+            </div>
+            <div className="text-2xl font-mono text-center font-bold" dir="ltr">
+                {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </div>
+        </div>
+    );
+};
+
 export default function EditEventPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
     const params = use(paramsPromise)
     const router = useRouter()
@@ -60,6 +88,19 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
     const handlePreSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
+
+        const eventDateTime = new Date(`${formData.date}T${formData.time}`);
+        const oneHourFromNow = new Date();
+        oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
+        oneHourFromNow.setMinutes(oneHourFromNow.getMinutes() - 1); 
+
+        if (eventDateTime < oneHourFromNow) {
+            const msg = isRTL ? 'يجب أن يكون وقت الفعالية بعد ساعة من الآن على الأقل' : 'Event time must be at least 1 hour from now';
+            setError(msg);
+            showToast(msg, 'error');
+            return;
+        }
+
         setShowConfirm(true)
     }
 
@@ -72,10 +113,8 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { category: _c, type: _t, is_online_registration_enabled: _i, ...updateData } = formData
             await updateEvent(params.id, updateData)
+            showToast(t.events.editSuccess || 'Event updated successfully!')
             router.push(`/events/${params.id}`)
-            setTimeout(() => {
-                showToast(t.events.details.deleteSuccess.includes('حذف') ? 'تم تعديل الفعالية بنجاح' : 'Event updated successfully!')
-            }, 100)
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Error updating event'
             setError(msg)
@@ -184,8 +223,21 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                                     <Input
                                         label={t.events.eventDate}
                                         type="date"
+                                        min={new Date().toLocaleDateString('en-CA')}
                                         value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        onChange={(e) => {
+                                            const newDate = e.target.value;
+                                            let newTime = formData.time;
+                                            const today = new Date().toLocaleDateString('en-CA');
+                                            if (newDate === today) {
+                                                const now = new Date();
+                                                now.setHours(now.getHours() + 1);
+                                                newTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                                            } else {
+                                                newTime = '09:00';
+                                            }
+                                            setFormData({ ...formData, date: newDate, time: newTime });
+                                        }}
                                         required
                                     />
                                     <Input
@@ -211,10 +263,15 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                                         label={t.events.maxAttendeesLabel}
                                         type="number"
                                         min="1"
-                                        value={formData.max_attendees}
+                                        value={formData.max_attendees || ''}
                                         onChange={(e) => {
                                             const val = parseInt(e.target.value);
-                                            setFormData({ ...formData, max_attendees: isNaN(val) ? 0 : val });
+                                            setFormData({ ...formData, max_attendees: isNaN(val) ? '' as any : val });
+                                        }}
+                                        onBlur={() => {
+                                            if (!formData.max_attendees || Number(formData.max_attendees) < 1) {
+                                                setFormData({ ...formData, max_attendees: 1 });
+                                            }
                                         }}
                                         required
                                         helperText={t.events.maxAttendeesHelper}
@@ -262,7 +319,14 @@ export default function EditEventPage({ params: paramsPromise }: { params: Promi
                 onClose={() => setShowConfirm(false)}
                 onConfirm={handleConfirmUpdate}
                 title={t.events.edit}
-                message={isRTL ? 'هل أنت متأكد من حفظ التعديلات على هذه الفعالية؟' : 'Are you sure you want to save changes to this event?'}
+                message={
+                    <div>
+                        {isRTL ? 'هل أنت متأكد من حفظ التعديلات على هذه الفعالية؟' : 'Are you sure you want to save changes to this event?'}
+                        {formData.date === new Date().toLocaleDateString('en-CA') && (
+                            <CountdownWarning targetDate={new Date(`${formData.date}T${formData.time}`)} isRTL={isRTL} />
+                        )}
+                    </div>
+                }
                 confirmLabel={t.common.save}
                 loading={updating}
             />

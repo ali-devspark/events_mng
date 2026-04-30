@@ -43,12 +43,9 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
     const [tickets, setTickets] = useState<Ticket[]>([])
     const [selectedTicket, setSelectedTicket] = useState<string>('')
     const [isPrivateDisabled, setIsPrivateDisabled] = useState(false)
+    const [isPublic, setIsPublic] = useState(false)
 
-    useEffect(() => {
-        if (event && event.type === 'private' && !event.is_online_registration_enabled) {
-            setIsPrivateDisabled(true)
-        }
-    }, [event])
+
 
     const registrationSchema = useMemo(() => z.object({
         name: z.string().min(2, t.registration.validation.nameShort),
@@ -72,31 +69,51 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
             try {
                 const data = await getEventById(id)
                 setEvent(data)
-                
+
+                if (data.type === 'public') {
+                    setIsPublic(true)
+                    return;
+                }
+
+                if (!data.is_online_registration_enabled) {
+                    setIsPrivateDisabled(true)
+                    return;
+                }
+
+                const eventDateTime = new Date(`${data.date}T${data.time}`)
+                if (eventDateTime <= new Date()) {
+                    setError('EVENT_FINISHED')
+                    return;
+                }
+
                 // Fetch tickets to show ticket dropdown
                 const supabase = createClient()
-                const { data: ticketsData } = await supabase
+                const { data: eventTickets } = await supabase
                     .from('tickets')
                     .select('*')
                     .eq('event_id', id)
-                    
-                if (ticketsData) {
+
+                const ticketsData = eventTickets!.filter((ticket: Ticket) => ticket.sold < ticket.quantity)
+
+                if (ticketsData.length > 0) {
                     setTickets(ticketsData)
                     // Auto-select first available ticket
-                    const firstAvailable = ticketsData.find((ticket: Ticket) => ticket.sold < ticket.quantity)
+                    const firstAvailable = ticketsData[0]
                     if (firstAvailable) {
                         setSelectedTicket(firstAvailable.id)
                     }
+                } else {
+                    setIsSoldOut(true)
                 }
             } catch (err: unknown) {
                 console.error('Error loading event:', err)
-                setError(t.registration.eventNotFoundDesc)
+                setError('NOT_FOUND')
             } finally {
                 setLoading(false)
             }
         }
         loadEvent()
-    }, [id, t.registration.eventNotFoundDesc])
+    }, [id])
 
     const onSubmit = async (data: RegistrationForm) => {
         if (!event) return
@@ -104,7 +121,7 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         setError(null)
         try {
             if (event.type === 'private' && tickets.length > 0 && !selectedTicket) {
-                setError(language === 'ar' ? 'الرجاء اختيار التذكرة' : 'Please select a ticket')
+                setError(t.registration.selectTicketPrompt || 'Please select a ticket')
                 setSubmitting(false)
                 return
             }
@@ -133,7 +150,7 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
             console.error('Registration error:', err)
             if (err instanceof Error && err.message === 'EVENT_SOLD_OUT') {
                 setIsSoldOut(true)
-                setError(language === 'ar' ? 'عذراً، نفدت جميع تذاكر هذه الفعالية' : 'Sorry, this event is sold out')
+                setError(t.registration.eventSoldOutError || 'Sorry, this event is sold out')
             } else {
                 setError(t.common.error)
             }
@@ -150,7 +167,7 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         )
     }
 
-    if (!event || (error && !success && !isSoldOut)) {
+    if (!event || error === 'NOT_FOUND') {
         return (
             <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
                 <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
@@ -168,6 +185,24 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         )
     }
 
+    if (isPublic) {
+        return (
+            <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        {t.registration.publicEventTitle || 'Public Event'}
+                    </h1>
+                    <p className="text-gray-400 mb-6">
+                        {t.registration.publicRegistrationDesc}
+                    </p>
+                    <Button onClick={() => router.push('/')} variant="primary">
+                        {t.registration.goHome}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
     if (isPrivateDisabled) {
         return (
             <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -176,7 +211,43 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                         {t.registration.eventNotFound}
                     </h1>
                     <p className="text-gray-400 mb-6">
-                        {t.registration.privateRegistrationDisabled || 'This is a private event and no online registration is available.'}
+                        {(t.registration.privateRegistrationDisabled || 'This is a private event and no online registration is available.')}
+                    </p>
+                    <Button onClick={() => router.push('/')} variant="primary">
+                        {t.registration.goHome}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    if (error === 'EVENT_FINISHED') {
+        return (
+            <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        {t.registration.eventFinishedTitle || 'Event Finished'}
+                    </h1>
+                    <p className="text-gray-400 mb-6">
+                        {t.registration.eventFinishedDesc || 'Sorry, this event has already finished and registration is closed.'}
+                    </p>
+                    <Button onClick={() => router.push('/')} variant="primary">
+                        {t.registration.goHome}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    if (isSoldOut && !success) {
+        return (
+            <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center">
+                    <h1 className="text-2xl font-bold text-white mb-4">
+                        {t.registration.soldOutTitle || 'Sold Out'}
+                    </h1>
+                    <p className="text-gray-400 mb-6">
+                        {t.registration.soldOutDesc || 'Sorry, all tickets for this event are sold out or no tickets are available.'}
                     </p>
                     <Button onClick={() => router.push('/')} variant="primary">
                         {t.registration.goHome}
@@ -225,6 +296,11 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                             <h2 className="text-xl font-semibold mb-6">
                                 {t.registration.title}
                             </h2>
+                            {error && error !== 'NOT_FOUND' && error !== 'EVENT_FINISHED' && (
+                                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                                    {error}
+                                </div>
+                            )}
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                 <Input
                                     label={t.registration.fullName}

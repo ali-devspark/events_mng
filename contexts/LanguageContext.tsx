@@ -181,6 +181,7 @@ interface Translations {
         cancelButton: string
         creating: string
         createSuccess: string
+        editSuccess: string
         createError: string
         confirmCreateTitle: string
         confirmCreateMessage: string
@@ -272,7 +273,15 @@ interface Translations {
         goHome: string
         title: string
         privateRegistrationDisabled: string
+        publicRegistrationDesc: string
+        publicEventTitle: string
         noTicketsAvailable: string
+        eventFinishedTitle: string
+        eventFinishedDesc: string
+        soldOutTitle: string
+        soldOutDesc: string
+        selectTicketPrompt: string
+        eventSoldOutError: string
         fullName: string
         fullNamePlaceholder: string
         email: string
@@ -520,7 +529,8 @@ const translations: Record<Language, Translations> = {
             cancelButton: 'Cancel',
             creating: 'Creating...',
             createSuccess: 'Event created successfully!',
-            createError: 'Failed to create event',
+            editSuccess: 'Event updated successfully!',
+            createError: 'Error creating event',
             confirmCreateTitle: 'Create New Event',
             confirmCreateMessage: 'Are you sure you want to create this event and announce it?',
             description: 'Manage your events and tickets',
@@ -608,7 +618,15 @@ const translations: Record<Language, Translations> = {
             eventNotFoundDesc: 'The link might be invalid or registration period has ended.',
             goHome: 'Go Home',
             privateRegistrationDisabled: 'This is a private event and no online registration is available.',
+            publicRegistrationDesc: 'This is a public event and no prior registration is required to attend.',
+            publicEventTitle: 'Public Event',
             noTicketsAvailable: 'No tickets available for this event.',
+            eventFinishedTitle: 'Event Finished',
+            eventFinishedDesc: 'Sorry, this event has already finished and registration is closed.',
+            soldOutTitle: 'Sold Out',
+            soldOutDesc: 'Sorry, all tickets for this event are sold out or no tickets are available.',
+            selectTicketPrompt: 'Please select a ticket',
+            eventSoldOutError: 'Sorry, this event is sold out',
             title: 'Event Registration',
             fullName: 'Full Name',
             fullNamePlaceholder: 'Enter your full name',
@@ -867,7 +885,8 @@ const translations: Record<Language, Translations> = {
             cancelButton: 'إلغاء',
             creating: 'جارٍ الإنشاء...',
             createSuccess: 'تم إنشاء الفعالية بنجاح!',
-            createError: 'فشل إنشاء الفعالية',
+            editSuccess: 'تم تعديل الفعالية بنجاح!',
+            createError: 'خطأ في إنشاء الفعالية',
             confirmCreateTitle: 'إنشاء فعالية جديدة',
             confirmCreateMessage: 'هل أنت متأكد من رغبتك في إنشاء هذه الفعالية ونشرها؟',
             description: 'إدارة فعالياتك وتذاكرك',
@@ -955,7 +974,15 @@ const translations: Record<Language, Translations> = {
             eventNotFoundDesc: 'يبدو أن الرابط غير صحيح أو أن التسجيل قد انتهى.',
             goHome: 'العودة للرئيسية',
             privateRegistrationDisabled: 'هذه فعالية خاصة ولا يوجد تسجيل أون لاين لهذه الفعالية.',
+            publicRegistrationDesc: 'هذه فعالية عامة ومفتوحة للجميع، ولا تتطلب تسجيلاً مسبقاً للحضور.',
+            publicEventTitle: 'فعالية عامة',
             noTicketsAvailable: 'لا توجد تذاكر متاحة لهذه الفعالية.',
+            eventFinishedTitle: 'الفعالية منتهية',
+            eventFinishedDesc: 'عذراً، لقد انتهى وقت هذه الفعالية ولا يمكن التسجيل فيها.',
+            soldOutTitle: 'نفدت التذاكر',
+            soldOutDesc: 'عذراً، نفدت جميع تذاكر هذه الفعالية أو لا توجد تذاكر متاحة للتسجيل.',
+            selectTicketPrompt: 'الرجاء اختيار التذكرة',
+            eventSoldOutError: 'عذراً، نفدت جميع تذاكر هذه الفعالية',
             title: 'التسجيل في الحدث',
             fullName: 'الاسم الكامل',
             fullNamePlaceholder: 'أدخل اسمك الكامل',

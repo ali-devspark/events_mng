@@ -10,7 +10,7 @@ interface ConfirmDialogProps {
     onClose: () => void
     onConfirm: () => void
     title: string
-    message: string
+    message: string | React.ReactNode
     confirmLabel?: string
     cancelLabel?: string
     variant?: 'danger' | 'primary'
@@ -37,9 +37,9 @@ export default function ConfirmDialog({
             title={title}
         >
             <div className={`space-y-6 ${isRTL ? 'text-start' : 'text-start'}`}>
-                <p className="text-gray-400">
+                <div className="text-gray-400">
                     {message}
-                </p>
+                </div>
 
                 <div className="flex gap-3 pt-2">
                     <Button

@@ -71,21 +71,6 @@ export async function createEvent(input: CreateEventInput) {
 
     if (error) throw error
     
-    if (data.type === 'public') {
-        const { error: ticketError } = await supabase
-            .from('tickets')
-            .insert({
-                event_id: data.id,
-                name: 'عام',
-                quantity: data.max_attendees,
-                price: ticket_price || 0,
-            })
-            
-        if (ticketError) {
-             console.error("Failed to create general ticket", ticketError);
-        }
-    }
-    
     return data as Event
 }
 
@@ -310,10 +295,12 @@ export async function createPublicAttendee(input: CreateAttendeeInput) {
         if (ticketError || !ticket) throw new Error('TICKET_NOT_FOUND')
         if (ticket.sold >= ticket.quantity) throw new Error('TICKET_SOLD_OUT')
 
-        await supabase
+        const { error: updateError } = await supabase
             .from('tickets')
             .update({ sold: ticket.sold + 1 })
             .eq('id', ticketId)
+        
+        if (updateError) throw new Error('TICKET_UPDATE_FAILED')
     }
 
     const { data, error } = await supabase
