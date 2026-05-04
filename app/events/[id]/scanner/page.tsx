@@ -143,6 +143,8 @@ export default function EventScannerPage({ params: paramsPromise }: { params: Pr
                                 message = isRTL ? 'هذه التذكرة تابعة لفعالية أخرى!' : 'This ticket belongs to a different event!'
                             } else if (err.message.includes('no rows')) {
                                 message = isRTL ? 'تذكرة غير صالحة أو غير تابعة لهذه الفعالية' : 'Invalid ticket or not authorized for this event'
+                            } else if (err.message === 'NOT_CONFIRMED') {
+                                message = t.scanner.notConfirmed
                             } else {
                                 message = err.message
                             }
@@ -209,6 +211,8 @@ export default function EventScannerPage({ params: paramsPromise }: { params: Pr
                     message = isRTL ? 'تذكرة غير صالحة أو غير تابعة لهذه الفعالية' : 'Invalid ticket or not authorized for this event'
                 } else if (err.message.toLocaleLowerCase().includes('no code found')) {
                     message = isRTL ? 'لم يتم العثور على رمز QR في هذه الصورة' : 'No QR code found in this image'
+                } else if (err.message === 'NOT_CONFIRMED') {
+                    message = t.scanner.notConfirmed
                 } else {
                     message = err.message
                 }
@@ -253,6 +257,8 @@ export default function EventScannerPage({ params: paramsPromise }: { params: Pr
                     message = isRTL ? 'هذه التذكرة تابعة لفعالية أخرى!' : 'This ticket belongs to a different event!'
                 } else if (err.message.includes('no rows')) {
                     message = isRTL ? 'تذكرة غير صالحة أو غير تابعة لهذه الفعالية' : 'Invalid ticket or not authorized for this event'
+                } else if (err.message === 'NOT_CONFIRMED') {
+                    message = t.scanner.notConfirmed
                 } else {
                     message = err.message
                 }

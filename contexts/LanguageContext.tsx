@@ -252,6 +252,12 @@ interface Translations {
             checkInError: string
             createTicketsFirst: string
             ticketSoldOut: string
+            unconfirmedAttendees: string
+            confirmBooking: string
+            confirmationStatus: string
+            confirmed: string
+            pendingConfirmation: string
+            ticketType: string
         }
     }
     // Scanner
@@ -265,6 +271,7 @@ interface Translations {
         reset: string
         manualEntryDesc: string
         scanRegionDesc: string
+        notConfirmed: string
     }
     // Registration
     registration: {
@@ -293,12 +300,19 @@ interface Translations {
         successDesc: string
         downloadImage: string
         printTicket: string
+        pendingTitle: string
+        pendingConfirmation: string
+        alreadyRegistered: string
         validation: {
             nameShort: string
             emailInvalid: string
             phoneShort: string
             companyRequired: string
         }
+        uploadReceipt: string
+        cashPaymentNotice: string
+        officeAddress: string
+        officeAddressLabel: string
     }
     // Settings
     settings: {
@@ -600,6 +614,12 @@ const translations: Record<Language, Translations> = {
                 checkInError: 'Check-in failed',
                 createTicketsFirst: 'You must create tickets first',
                 ticketSoldOut: 'This ticket has sold out',
+                unconfirmedAttendees: 'Unconfirmed Attendees',
+                confirmBooking: 'Confirm Booking',
+                confirmationStatus: 'Confirmation Status',
+                confirmed: 'Confirmed',
+                pendingConfirmation: 'Pending Confirmation',
+                ticketType: 'Ticket Type',
             }
         },
         scanner: {
@@ -612,6 +632,7 @@ const translations: Record<Language, Translations> = {
             reset: 'Reset Scanner',
             manualEntryDesc: 'Please try again or enter the code manually.',
             scanRegionDesc: 'Scanning Region',
+            notConfirmed: 'This booking is not confirmed yet. Please visit the office to confirm.',
         },
         registration: {
             eventNotFound: 'Sorry, Event Not Found',
@@ -637,6 +658,9 @@ const translations: Record<Language, Translations> = {
             confirm: 'Confirm Registration & Get Ticket',
             successTitle: 'Congratulations! Registration Successful',
             successDesc: 'Thank you for registering for {title}. You can now download your e-ticket to use at entry.',
+            pendingTitle: 'Registration Request Received',
+            pendingConfirmation: 'Thank you for registering for {title}. Your request is pending confirmation. Please visit our office at {address} to confirm your booking.',
+            alreadyRegistered: 'You are already registered for this event.',
             downloadImage: 'Download as Image',
             printTicket: 'Print Ticket (PDF)',
             validation: {
@@ -644,7 +668,11 @@ const translations: Record<Language, Translations> = {
                 emailInvalid: 'Invalid email address',
                 phoneShort: 'Invalid phone number',
                 companyRequired: 'Company name is required'
-            }
+            },
+            uploadReceipt: 'Upload Payment Receipt',
+            cashPaymentNotice: 'Please visit the office for cash payments and to receive your ticket directly to confirm your name.',
+            officeAddress: 'Hadramout - Mukalla - Bin Mahfouz Towers',
+            officeAddressLabel: 'Office Address',
         },
         settings: {
             title: 'Settings',
@@ -956,6 +984,12 @@ const translations: Record<Language, Translations> = {
                 checkInError: 'فشل عملية التحضير',
                 createTicketsFirst: 'يجب انشاء التذاكر أولا',
                 ticketSoldOut: 'هذه التذكرة انتهت',
+                unconfirmedAttendees: 'حضور بانتظار التأكيد',
+                confirmBooking: 'تأكيد الحجز',
+                confirmationStatus: 'حالة التأكيد',
+                confirmed: 'مؤكد',
+                pendingConfirmation: 'بانتظار التأكيد',
+                ticketType: 'نوع التذكرة',
             }
         },
         scanner: {
@@ -968,6 +1002,7 @@ const translations: Record<Language, Translations> = {
             reset: 'إعادة ضبط الماسح',
             manualEntryDesc: 'يرجى المحاولة مرة أخرى أو إدخال الكود يدوياً.',
             scanRegionDesc: 'منطقة المسح',
+            notConfirmed: 'هذا الحجز غير مؤكد بعد، يرجى مراجعة المكتب لتأكيد حجزك.',
         },
         registration: {
             eventNotFound: 'عذراً، الحدث غير موجود',
@@ -993,6 +1028,9 @@ const translations: Record<Language, Translations> = {
             confirm: 'تأكيد التسجيل والحصول على التذكرة',
             successTitle: 'تهانينا! تم تسجيلك بنجاح',
             successDesc: 'شكراً لتسجيلك في {title}. يمكنك الآن تحميل تذكرتك الإلكترونية لاستخدامها عند الدخول.',
+            pendingTitle: 'تم استلام طلب التسجيل',
+            pendingConfirmation: 'شكراً لتسجيلك في {title}. طلبك بانتظار التأكيد من قبل الإدارة. يرجى مراجعة المكتب في {address} لتأكيد حجزك.',
+            alreadyRegistered: 'أنت مسجل بالفعل في هذه الفعالية.',
             downloadImage: 'تحميل كصورة',
             printTicket: 'طباعة التذكرة (PDF)',
             validation: {
@@ -1000,7 +1038,11 @@ const translations: Record<Language, Translations> = {
                 emailInvalid: 'بريد إلكتروني غير صالح',
                 phoneShort: 'رقم هاتف غير صالح',
                 companyRequired: 'اسم الشركة مطلوب'
-            }
+            },
+            uploadReceipt: 'رفع إيصال الدفع',
+            cashPaymentNotice: 'الرجاء زيارة المكتب في حال الدفع كاش ولإستلام التذكرة مباشرة لتأكيد اسمك',
+            officeAddress: 'حضرموت - المكلا - أبراج بن محفوظ',
+            officeAddressLabel: 'عنوان المكتب',
         },
         settings: {
             title: 'الإعدادات',

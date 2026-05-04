@@ -44,6 +44,8 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
     const [selectedTicket, setSelectedTicket] = useState<string>('')
     const [isPrivateDisabled, setIsPrivateDisabled] = useState(false)
     const [isPublic, setIsPublic] = useState(false)
+    const [receiptFile, setReceiptFile] = useState<File | null>(null)
+    const [isConfirmedAttendee, setIsConfirmedAttendee] = useState(true)
 
 
 
@@ -51,7 +53,7 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
         name: z.string().min(2, t.registration.validation.nameShort),
         email: z.string().email(t.registration.validation.emailInvalid),
         phone: z.string().min(8, t.registration.validation.phoneShort),
-        company: z.string().min(2, t.registration.validation.companyRequired),
+        company: z.string().optional(),
     }), [t.registration.validation])
 
     type RegistrationForm = z.infer<typeof registrationSchema>
@@ -113,7 +115,23 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
             }
         }
         loadEvent()
+
+        // Check if already registered
+        const registered = localStorage.getItem(`reg_${id}`)
+        if (registered) {
+            setSuccess(true)
+            const storedUrl = localStorage.getItem(`ticket_${id}`)
+            if (storedUrl) setTicketUrl(storedUrl)
+            
+            const confirmedStatus = localStorage.getItem(`confirmed_${id}`)
+            if (confirmedStatus) setIsConfirmedAttendee(confirmedStatus === 'true')
+        }
     }, [id])
+
+    const isPaidTicket = useMemo(() => {
+        const ticket = tickets.find(t => t.id === selectedTicket)
+        return ticket ? ticket.price > 0 : false
+    }, [tickets, selectedTicket])
 
     const onSubmit = async (data: RegistrationForm) => {
         if (!event) return
@@ -126,31 +144,64 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                 return
             }
 
+            let receiptUrl = undefined
+            if (receiptFile) {
+                const supabase = createClient()
+                const fileExt = receiptFile.name.split('.').pop()
+                const fileName = `${id}-${Date.now()}.${fileExt}`
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('receipts')
+                    .upload(fileName, receiptFile)
+
+                if (uploadError) {
+                    console.error('Upload error:', uploadError)
+                } else {
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('receipts')
+                        .getPublicUrl(uploadData.path)
+                    receiptUrl = publicUrl
+                }
+            }
+
+            const isConfirmed = !isPaidTicket
+            setIsConfirmedAttendee(isConfirmed)
+
             const attendee = await createPublicAttendee({
                 event_id: event.id,
                 name: data.name,
                 email: data.email,
                 phone: data.phone,
                 company: data.company,
-                ticket_id: selectedTicket || undefined
+                ticket_id: selectedTicket || undefined,
+                payment_receipt: receiptUrl,
+                is_confirmed: isConfirmed
             })
 
             // Generate ticket image
+            const ticketName = tickets.find(t => t.id === selectedTicket)?.name || ''
             const imgUrl = await generateTicketImage({
                 eventName: event.title,
                 attendeeName: attendee.name,
                 date: event.date,
                 time: event.time,
                 location: event.location,
-                barcode: `${event.id}:${attendee.id}` // Unique ticket code
+                barcode: `${event.id}:${attendee.id}`, // Unique ticket code
+                ticketType: ticketName
             })
             setTicketUrl(imgUrl)
             setSuccess(true)
+
+            // Save to localStorage
+            localStorage.setItem(`reg_${id}`, 'true')
+            localStorage.setItem(`ticket_${id}`, imgUrl)
+            localStorage.setItem(`confirmed_${id}`, String(attendee.is_confirmed))
         } catch (err: unknown) {
             console.error('Registration error:', err)
             if (err instanceof Error && err.message === 'EVENT_SOLD_OUT') {
                 setIsSoldOut(true)
                 setError(t.registration.eventSoldOutError || 'Sorry, this event is sold out')
+            } else if (err instanceof Error && err.message === 'ALREADY_REGISTERED') {
+                setError(t.registration.alreadyRegistered)
             } else {
                 setError(t.common.error)
             }
@@ -360,6 +411,44 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                                         </select>
                                     </div>
                                 )}
+
+                                {isPaidTicket && (
+                                    <div className="space-y-6 animate-fade-in">
+                                        <div className="p-4 bg-primary-500/10 border border-primary-500/20 rounded-2xl">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0 text-primary-400">
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-medium mb-1">{t.registration.cashPaymentNotice}</p>
+                                                    <p className="text-primary-400 text-sm font-bold">{t.registration.officeAddress}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-200">
+                                                {t.registration.uploadReceipt} ({t.events.details.free.toLowerCase()})
+                                            </label>
+                                            <div className="relative group">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                />
+                                                <div className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-gray-400 group-hover:border-primary-500/50 transition-all flex items-center gap-3">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                    <span>{receiptFile ? receiptFile.name : (isRTL ? 'اختر ملف الصورة...' : 'Choose image file...')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
  
                                 <Button
                                     type="submit"
@@ -381,13 +470,18 @@ export default function PublicRegistrationPage({ params }: { params: Promise<{ i
                             </svg>
                         </div>
                         <h1 className="text-3xl font-bold mb-4">
-                            {t.registration.successTitle}
+                            {isConfirmedAttendee ? t.registration.successTitle : t.registration.pendingTitle}
                         </h1>
                         <p className="text-gray-400 text-lg mb-8 max-w-md mx-auto">
-                            {t.registration.successDesc.replace('{title}', event!.title)}
+                            {isConfirmedAttendee 
+                                ? t.registration.successDesc.replace('{title}', event!.title)
+                                : t.registration.pendingConfirmation
+                                    .replace('{title}', event!.title)
+                                    .replace('{address}', t.registration.officeAddress)
+                            }
                         </p>
 
-                        {ticketUrl && (
+                        {isConfirmedAttendee && ticketUrl && (
                             <div className="space-y-6">
                                 <div className="bg-white p-4 rounded-xl inline-block shadow-lg">
                                     <Image 

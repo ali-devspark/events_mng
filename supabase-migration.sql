@@ -168,6 +168,8 @@ CREATE TABLE IF NOT EXISTS attendees (
   email TEXT NOT NULL,
   phone TEXT,
   company TEXT,
+  payment_receipt TEXT,
+  is_confirmed BOOLEAN DEFAULT TRUE,
   registration_source TEXT DEFAULT 'manual',
   checked_in BOOLEAN DEFAULT FALSE,
   checked_in_at TIMESTAMPTZ,

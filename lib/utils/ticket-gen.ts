@@ -7,6 +7,7 @@ export interface TicketData {
     time: string
     location: string
     barcode: string
+    ticketType?: string
 }
 
 export async function generateQRCode(data: string): Promise<string> {
@@ -75,6 +76,21 @@ export async function generateTicketImage(data: TicketData): Promise<string> {
     ctx.fillStyle = '#ffffff'
     ctx.font = '18px sans-serif'
     ctx.fillText(data.location, 30, 260)
+
+    // Ticket Type Badge
+    if (data.ticketType) {
+        ctx.fillStyle = '#3b82f6' // blue-500
+        const textWidth = ctx.measureText(data.ticketType).width
+        ctx.beginPath()
+        ctx.roundRect(580 - textWidth - 30, 20, textWidth + 20, 30, 5)
+        ctx.fill()
+
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 14px sans-serif'
+        ctx.textAlign = 'right'
+        ctx.fillText(data.ticketType, 560, 40)
+        ctx.textAlign = 'start'
+    }
 
     // QR Code
     const qrUrl = await generateQRCode(data.barcode)

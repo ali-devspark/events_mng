@@ -2,19 +2,30 @@
 
 import { useEffect, useState, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Sidebar from '@/components/layout/Sidebar'
 import BarcodeDisplay from '@/components/events/BarcodeDisplay'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Alert from '@/components/ui/Alert'
 import Modal from '@/components/ui/Modal'
-import { getEventById, deleteEvent, getTicketsByEventId, createTicket, deleteTicket } from '@/lib/api/events'
+import { 
+    getEventById, 
+    deleteEvent, 
+    getTicketsByEventId, 
+    createTicket, 
+    deleteTicket,
+    getAttendeesByEventId, 
+    checkInAttendee, 
+    createAttendee, 
+    deleteAttendee, 
+    confirmAttendee 
+} from '@/lib/api/events'
 import { Event, Ticket, CreateTicketInput } from '@/types'
 import { formatDate, formatTime } from '@/lib/date-utils'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Tabs from '@/components/ui/Tabs'
-import { getAttendeesByEventId, checkInAttendee, createAttendee, deleteAttendee } from '@/lib/api/events'
 import { Attendee, CreateAttendeeInput } from '@/types'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/contexts/ToastContext'
@@ -186,6 +197,16 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
         }
     }
 
+    async function handleConfirmAttendee(attendeeId: string) {
+        try {
+            await confirmAttendee(attendeeId)
+            showToast(isRTL ? 'تم تأكيد الحجز بنجاح' : 'Booking confirmed successfully')
+            loadEventData()
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : (isRTL ? 'فشل تأكيد الحجز' : 'Failed to confirm booking'), 'error')
+        }
+    }
+
     async function handleViewDetails(attendee: Attendee) {
         if (!event) return;
         setSelectedAttendee(attendee);
@@ -197,7 +218,8 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                 date: event.date,
                 time: event.time,
                 location: event.location,
-                barcode: `${event.id}:${attendee.id}`
+                barcode: `${event.id}:${attendee.id}`,
+                ticketType: attendee.tickets?.name
             });
             setTicketUrl(imgUrl);
         } catch (err) {
@@ -541,26 +563,79 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 </div>
                             </div>
 
+                            {attendees.filter(a => !a.is_confirmed).length > 0 && (
+                                <div className="p-6 bg-yellow-500/10 border-b border-white/10 animate-fade-in text-start">
+                                    <div className="flex items-center gap-2 mb-4 text-yellow-500">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 15c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <h3 className="font-bold">{t.events.details.unconfirmedAttendees}</h3>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left rtl:text-right">
+                                            <thead className="text-gray-400 text-xs">
+                                                <tr>
+                                                    <th className="px-4 py-2 font-medium">{t.events.details.name}</th>
+                                                    <th className="px-4 py-2 font-medium">{t.events.details.ticketType}</th>
+                                                    <th className="px-4 py-2 font-medium">{isRTL ? 'إيصال الدفع' : 'Receipt'}</th>
+                                                    <th className="px-4 py-2 font-medium">{t.events.details.action}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-white/5">
+                                                {attendees.filter(a => !a.is_confirmed).map((attendee) => (
+                                                    <tr key={attendee.id} className="hover:bg-white/[0.02]">
+                                                        <td className="px-4 py-3">
+                                                            <div className="text-white font-medium text-sm">{attendee.name}</div>
+                                                            <div className="text-gray-500 text-xs">{attendee.email}</div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-gray-300 text-sm">
+                                                            {attendee.tickets?.name || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            {attendee.payment_receipt ? (
+                                                                <a href={attendee.payment_receipt} target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline text-xs">
+                                                                    {isRTL ? 'عرض الإيصال' : 'View Receipt'}
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-gray-500 text-xs">{isRTL ? 'لا يوجد' : 'No receipt'}</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <Button
+                                                                variant="primary"
+                                                                size="sm"
+                                                                onClick={() => handleConfirmAttendee(attendee.id)}
+                                                                className="!py-1"
+                                                            >
+                                                                {t.events.details.confirmBooking}
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left rtl:text-right">
                                     <thead className="bg-white/5 text-gray-400 text-sm">
                                         <tr>
                                             <th className="px-6 py-4 font-medium">{t.events.details.name}</th>
-                                            <th className="px-6 py-4 font-medium">{t.events.details.company}</th>
-                                            <th className="px-6 py-4 font-medium">{t.events.details.phone}</th>
+                                            <th className="px-6 py-4 font-medium">{t.events.details.ticketType}</th>
                                             <th className="px-6 py-4 font-medium">{t.events.details.status}</th>
                                             <th className="px-6 py-4 font-medium">{t.events.details.action}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {attendees.map((attendee) => (
+                                        {attendees.filter(a => a.is_confirmed).map((attendee) => (
                                             <tr key={attendee.id} className="hover:bg-white/[0.02] transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="text-white font-medium">{attendee.name}</div>
                                                     <div className="text-gray-500 text-xs">{attendee.email}</div>
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-300">{attendee.company || '-'}</td>
-                                                <td className="px-6 py-4 text-gray-300">{attendee.phone || '-'}</td>
+                                                <td className="px-6 py-4 text-gray-300">{attendee.tickets?.name || '-'}</td>
                                                 <td className="px-6 py-4">
                                                     {attendee.checked_in ? (
                                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-500/10 text-success-400">
@@ -606,9 +681,9 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                                 </td>
                                             </tr>
                                         ))}
-                                        {attendees.length === 0 && (
+                                        {attendees.filter(a => a.is_confirmed).length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                                <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                                                     {t.events.details.noAttendees}
                                                 </td>
                                             </tr>
@@ -730,7 +805,6 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                         type="text"
                         value={attendeeForm.company}
                         onChange={(e) => setAttendeeForm({ ...attendeeForm, company: e.target.value })}
-                        required
                     />
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-2">
@@ -787,7 +861,29 @@ export default function EventDetailsPage({ params: paramsPromise }: { params: Pr
                                 <p><span className="font-bold text-gray-400">{t.events.details.name}:</span> <br/>{selectedAttendee.name}</p>
                                 <p><span className="font-bold text-gray-400">{t.registration.email || 'Email'}:</span> <br/>{selectedAttendee.email}</p>
                                 <p><span className="font-bold text-gray-400">{t.events.details.phone}:</span> <br/>{selectedAttendee.phone}</p>
-                                <p><span className="font-bold text-gray-400">{t.events.details.company}:</span> <br/>{selectedAttendee.company}</p>
+                                <p><span className="font-bold text-gray-400">{t.events.details.ticketType}:</span> <br/>{selectedAttendee.tickets?.name || '-'}</p>
+                                <p><span className="font-bold text-gray-400">{t.events.details.confirmationStatus}:</span> <br/>
+                                    {selectedAttendee.is_confirmed ? (
+                                        <span className="text-success-400">{t.events.details.confirmed}</span>
+                                    ) : (
+                                        <span className="text-yellow-500">{t.events.details.pendingConfirmation}</span>
+                                    )}
+                                </p>
+                                {selectedAttendee.payment_receipt && (
+                                    <div className="pt-4">
+                                        <p className="font-bold text-gray-400 mb-2">{isRTL ? 'إيصال الدفع:' : 'Payment Receipt:'}</p>
+                                        <a href={selectedAttendee.payment_receipt} target="_blank" rel="noopener noreferrer" className="block w-full rounded-xl overflow-hidden border border-white/10 hover:border-primary-500 transition-all">
+                                            <Image 
+                                                src={selectedAttendee.payment_receipt} 
+                                                alt="Receipt" 
+                                                width={500}
+                                                height={500}
+                                                className="w-full h-auto" 
+                                                unoptimized
+                                            />
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         

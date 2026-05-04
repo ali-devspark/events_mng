@@ -67,7 +67,12 @@ export interface Attendee {
     registration_source: 'manual' | 'public_link'
     checked_in: boolean
     checked_in_at?: string
+    payment_receipt?: string
+    is_confirmed: boolean
     created_at: string
+    tickets?: {
+        name: string
+    }
 }
 
 export interface EventStats {
@@ -107,6 +112,8 @@ export interface CreateAttendeeInput {
     phone?: string
     company?: string
     registration_source?: string
+    payment_receipt?: string
+    is_confirmed?: boolean
 }
 
 export interface EventWithTickets extends Event {

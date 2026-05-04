@@ -217,7 +217,7 @@ export async function getAttendeesByEventId(eventId: string) {
 
     const { data, error } = await supabase
         .from('attendees')
-        .select('*')
+        .select('*, tickets(name)')
         .eq('event_id', eventId)
         .order('created_at', { ascending: false })
 
@@ -246,7 +246,10 @@ export async function createAttendee(input: CreateAttendeeInput) {
 
     const { data, error } = await supabase
         .from('attendees')
-        .insert(input)
+        .insert({
+            ...input,
+            is_confirmed: true // Manual additions by admin are auto-confirmed
+        })
         .select()
         .single()
 
@@ -264,44 +267,43 @@ export async function createPublicAttendee(input: CreateAttendeeInput) {
         
     if (eventError || !event) throw new Error('EVENT_NOT_FOUND')
     
+    // Check if already registered with this email for this event
+    const { data: existingAttendee } = await supabase
+        .from('attendees')
+        .select('id')
+        .eq('event_id', input.event_id)
+        .eq('email', input.email)
+        .maybeSingle()
+
+    if (existingAttendee) {
+        throw new Error('ALREADY_REGISTERED')
+    }
+    
     if (event.type === 'private' && !event.is_online_registration_enabled) {
         throw new Error('REGISTRATION_DISABLED')
     }
 
-    let ticketId = input.ticket_id;
-    
-    if (event.type === 'public') {
-        const { data: tickets, error: ticketsError } = await supabase
-            .from('tickets')
-            .select('id, quantity, sold')
-            .eq('event_id', event.id)
-            .eq('name', 'عام')
-            
-        if (ticketsError || !tickets || tickets.length === 0) throw new Error('EVENT_SOLD_OUT')
-        const generalTicket = tickets[0];
-        
-        if (generalTicket.sold >= generalTicket.quantity) {
-             throw new Error('EVENT_SOLD_OUT')
-        }
-        ticketId = generalTicket.id;
-    }
+    const ticketId = input.ticket_id;
     
     if (ticketId) {
         const { data: ticket, error: ticketError } = await supabase
             .from('tickets')
-            .select('id, quantity, sold')
+            .select('id, quantity, sold, price')
             .eq('id', ticketId)
             .single()
 
         if (ticketError || !ticket) throw new Error('TICKET_NOT_FOUND')
         if (ticket.sold >= ticket.quantity) throw new Error('TICKET_SOLD_OUT')
 
-        const { error: updateError } = await supabase
-            .from('tickets')
-            .update({ sold: ticket.sold + 1 })
-            .eq('id', ticketId)
-        
-        if (updateError) throw new Error('TICKET_UPDATE_FAILED')
+        // Increment sold count ONLY for free tickets. Paid tickets wait for manual confirmation.
+        if (ticket.price === 0) {
+            const { error: updateError } = await supabase
+                .from('tickets')
+                .update({ sold: ticket.sold + 1 })
+                .eq('id', ticketId)
+            
+            if (updateError) throw new Error('TICKET_UPDATE_FAILED')
+        }
     }
 
     const { data, error } = await supabase
@@ -309,7 +311,8 @@ export async function createPublicAttendee(input: CreateAttendeeInput) {
         .insert({
             ...input,
             ticket_id: ticketId,
-            registration_source: 'public_link'
+            registration_source: 'public_link',
+            is_confirmed: input.is_confirmed ?? true // Fallback if not provided
         })
         .select()
         .single()
@@ -327,6 +330,11 @@ export async function checkInAttendee(id: string, expectedEventId?: string) {
         .single()
 
     if (fetchError || !attendeeData) throw new Error('Attendee not found')
+
+    // Block unconfirmed attendees from checking in
+    if (!attendeeData.is_confirmed) {
+        throw new Error('NOT_CONFIRMED')
+    }
 
     // Validate event ownership if expectedEventId is provided
     if (expectedEventId && attendeeData.event_id !== expectedEventId) {
@@ -371,6 +379,44 @@ export async function checkInAttendee(id: string, expectedEventId?: string) {
     return data as Attendee
 }
 
+export async function confirmAttendee(id: string) {
+    // 1. Get attendee and ticket details
+    const { data: attendee, error: getError } = await supabase
+        .from('attendees')
+        .select('*, tickets(id, quantity, sold)')
+        .eq('id', id)
+        .single();
+
+    if (getError || !attendee) throw new Error('Attendee not found');
+    if (attendee.is_confirmed) return attendee as Attendee;
+
+    // 2. If it has a ticket, check availability and increment sold
+    if (attendee.ticket_id && attendee.tickets) {
+        const ticket = attendee.tickets as unknown as { id: string, quantity: number, sold: number };
+        if (ticket.sold >= ticket.quantity) {
+            throw new Error('TICKET_SOLD_OUT');
+        }
+
+        const { error: updateError } = await supabase
+            .from('tickets')
+            .update({ sold: ticket.sold + 1 })
+            .eq('id', ticket.id);
+
+        if (updateError) throw updateError;
+    }
+
+    // 3. Confirm the attendee
+    const { data, error } = await supabase
+        .from('attendees')
+        .update({ is_confirmed: true })
+        .eq('id', id)
+        .select('*, tickets(name)')
+        .single()
+
+    if (error) throw error
+    return data as Attendee
+}
+
 // =====================================================
 // STATISTICS
 // =====================================================
@@ -383,7 +429,7 @@ export async function deleteAttendee(id: string) {
     // get attendee to find ticket_id and verify event ownership
     const { data: attendee, error: getError } = await supabase
         .from('attendees')
-        .select('ticket_id, event_id, events!inner(user_id)')
+        .select('ticket_id, is_confirmed, event_id, events!inner(user_id)')
         .eq('id', id)
         .single();
         
@@ -394,7 +440,8 @@ export async function deleteAttendee(id: string) {
         throw new Error('Not authorized to delete this attendee');
     }
 
-    if (attendee.ticket_id) {
+    // Only decrement if the attendee was confirmed (meaning their ticket was "sold")
+    if (attendee.ticket_id && attendee.is_confirmed) {
         // decrement ticket sold count
         const { data: ticket } = await supabase
             .from('tickets')
